@@ -1,0 +1,125 @@
+﻿@using System
+@using System.Collections.Generic
+@using System.Linq
+@model APTS_WEB_APP.Models.CurrentStockReport
+@{
+    Layout = null;
+    ViewBag.Title = "Current Stock Report";
+    var clientList = Model == null || Model.ClientList == null ? new List<APTS_WEB_APP.Models.CurrentStockReport.DropdownItem>() : Model.ClientList;
+    var selectedClient = Model == null ? string.Empty : Model.ClientCode;
+    var selectedClientText = clientList.FirstOrDefault(item => item.Value == selectedClient);
+    var clientLabel = selectedClientText == null ? "Select Client" : selectedClientText.Text;
+    var reportDate = Model == null ? DateTime.Today : Model.ReportDate;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Current Stock Report - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260620-3" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen apts-current-stock-screen" aria-label="Current Stock Report screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("Report", "Report")" aria-label="Back to reports">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>Current Stock Status</p>
+        </section>
+
+        <form class="apts-member-form apts-current-stock-form"
+              action="#"
+              method="post"
+              data-current-stock-form
+              data-client-options-url="@Url.Action("GetCurrentStockClientOptions", "Report")"
+              data-report-url="@Url.Action("GetCurrentStockReport", "Report")">
+            <fieldset class="apts-stock-location-mode">
+                <legend>Stock Location</legend>
+                <label>
+                    <input type="radio" name="StockLocation" value="Factory" data-stock-location-mode />
+                    <span>Factory</span>
+                </label>
+                <label>
+                    <input type="radio" name="StockLocation" value="Warehouse" data-stock-location-mode />
+                    <span>Warehouse</span>
+                </label>
+                <label>
+                    <input type="radio" name="StockLocation" value="Client" checked data-stock-location-mode />
+                    <span>Client</span>
+                </label>
+                <label>
+                    <input type="radio" name="StockLocation" value="Truck" data-stock-location-mode />
+                    <span>Truck</span>
+                </label>
+            </fieldset>
+
+            <div class="apts-field apts-custom-select-field" data-client-select-field>
+                <label for="ClientName" data-client-select-title>Client</label>
+                <input id="ClientName" name="ClientName" type="hidden" value="@selectedClient" data-custom-select-value data-current-stock-client />
+                <div class="apts-custom-select" data-custom-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>@clientLabel</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        @foreach (var client in clientList)
+                        {
+                            <button type="button" role="option" data-value="@client.Value" aria-selected="@(client.Value == selectedClient ? "true" : "false")">@client.Text</button>
+                        }
+                        @if (clientList.Count == 0)
+                        {
+                            <button type="button" role="option" data-value="">No client found</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-field apts-current-stock-date">
+                <label for="ReportDate">Date</label>
+                <input id="ReportDate" name="ReportDate" type="date" value="@reportDate.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <button class="apts-form-submit apts-current-stock-submit" type="submit">Submit</button>
+            <p class="apts-form-save-status" data-current-stock-status aria-live="polite"></p>
+
+            <section class="apts-current-stock-summary" aria-label="Current stock totals" data-current-stock-summary hidden>
+            </section>
+
+            <section class="apts-current-stock-table" aria-label="Current stock report result" data-current-stock-table hidden>
+                <div class="apts-current-stock-table__head">
+                    <span>Parameter</span>
+                    <span>Member Size</span>
+                    <span>Count</span>
+                </div>
+
+                <div data-current-stock-rows></div>
+            </section>
+        </form>
+    </main>
+
+    <script src="~/Scripts/apts-custom-select.js"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260620"></script>
+    <script src="@Url.Content("~/Scripts/apts-current-stock-report.js")?v=20260620-3"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+
+

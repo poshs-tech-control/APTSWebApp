@@ -1,0 +1,220 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "Menu";
+
+    var menuAccess = ViewBag.MenuAccess as System.Collections.Generic.List<APTS_WEB_APP.DataIntraction.DataAccess.MenuAccessItem>
+        ?? Session["MenuAccess"] as System.Collections.Generic.List<APTS_WEB_APP.DataIntraction.DataAccess.MenuAccessItem>
+        ?? new System.Collections.Generic.List<APTS_WEB_APP.DataIntraction.DataAccess.MenuAccessItem>();
+
+    Func<string, string> normalizeMenuKey = value =>
+    {
+        if (String.IsNullOrWhiteSpace(value))
+        {
+            return String.Empty;
+        }
+
+        var chars = new System.Collections.Generic.List<char>();
+        foreach (char ch in value)
+        {
+            if (Char.IsLetterOrDigit(ch))
+            {
+                chars.Add(Char.ToUpperInvariant(ch));
+            }
+        }
+
+        return new String(chars.ToArray());
+    };
+
+    var allowedKeys = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    Action<string> addAllowedKey = value =>
+    {
+        string key = normalizeMenuKey(value);
+        if (!String.IsNullOrWhiteSpace(key))
+        {
+            allowedKeys.Add(key);
+        }
+    };
+
+    foreach (var item in menuAccess)
+    {
+        addAllowedKey(item.MenuDTCode);
+        addAllowedKey(item.MenuDTName);
+        addAllowedKey(item.TransactionID);
+    }
+
+    Func<string[], bool> hasAccess = aliases => aliases.Any(alias => allowedKeys.Contains(normalizeMenuKey(alias)));
+
+    var cards = new[]
+    {
+        new MenuCard
+        {
+            Label = "Member Master",
+            Url = Url.Action("MemberMaster", "MemberMaster"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14M5 12h14M5 17h14M7 5v14M12 5v14M17 5v14\" /></svg>",
+            Keys = new[] { "Member Master", "MemberMaster", "Member Manufacturing", "MemberManufacturing" }
+        },
+        new MenuCard
+        {
+            Label = "Internal Transfer",
+            Url = Url.Action("InternalTransfer", "InternalTransfer"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 7h10M7 17h10M9 4 6 7l3 3M15 14l3 3-3 3\" /></svg>",
+            Keys = new[] { "Internal Transfer", "InternalTransfer", "Member Dispatch", "MemberDispatch", "Internal Transfer Challan" }
+        },
+        new MenuCard
+        {
+            Label = "Member Receipt",
+            Url = Url.Action("MemberReceipt", "MemberReceipt"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 3h10v5H7zM5 12h14M8 12v8h8v-8M12 8v9m0 0-3-3m3 3 3-3\" /></svg>",
+            Keys = new[] { "Member Receipt", "MemberReceipt", "Member Receive", "MemberReceived" }
+        },
+        new MenuCard
+        {
+            Label = "Pallet Order",
+            Url = Url.Action("PalletOrder", "PalletOrder"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 5h12v14H6zM9 9h6M9 13h4M16 17l3 3M8 17l-3 3\" /></svg>",
+            Keys = new[] { "Pallet Order", "PalletOrder" }
+        },
+        new MenuCard
+        {
+            Label = "Pallet Assemble",
+            Url = Url.Action("PalletAssemble", "PalletAssemble"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 14h14v5H5zM7 10h10v4H7zM9 6h6v4H9zM8 19v2m8-2v2\" /></svg>",
+            Keys = new[] { "Pallet Assemble", "PalletAssemble", "Pallet Assembly", "PalletAssembly" }
+        },
+        new MenuCard
+        {
+            Label = "Pallet Diss(Client)",
+            Url = Url.Action("PalletDisassembleClient", "PalletDisassembleClient"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 4h10v16H7zM10 7h4M10 11h4M10 15h4M4 18h3M17 18h3\" /></svg>",
+            Keys = new[] { "Pallet Diss Client", "PalletDissClient", "Pallet Disassemble Client", "PalletDisassembleClient", "Pallet Dismantle Client", "PalletDismantleClient", "Pallet Dismentle Client", "PalletDismentleClient" }
+        },
+        new MenuCard
+        {
+            Label = "Pre-Dispatch Details",
+            Url = Url.Action("PalletPreDispatch", "PalletPreDispatch"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 17h12v4H6zM8 11h8v6H8zM10 5h4v6h-4zM7 8h10\" /></svg>",
+            Keys = new[] { "Pre Dispatch Details", "PreDispatchDetails", "Pallet Pre Dispatch", "PalletPreDispatch" }
+        },
+        new MenuCard
+        {
+            Label = "Pallet Dispatch",
+            Url = Url.Action("PalletDispatch", "PalletDispatch"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 8h11v8H3zM14 11h4l3 3v2h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z\" /></svg>",
+            Keys = new[] { "Pallet Dispatch", "PalletDispatch" }
+        },
+        new MenuCard
+        {
+            Label = "Pallet Diss(Customer)",
+            Url = Url.Action("PalletDisassembleCustomer", "PalletDisassembleCustomer"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 17h12v4H6zM8 11h8v6H8zM10 5h4v6h-4zM4 8h4M16 8h4\" /></svg>",
+            Keys = new[] { "Pallet Diss Customer", "PalletDissCustomer", "Pallet Disassemble Customer", "PalletDisassembleCustomer", "Pallet Dismantle Customer", "PalletDismantleCustomer", "Pallet Dismentle Customer", "PalletDismentleCustomer" }
+        },
+        new MenuCard
+        {
+            Label = "Member Collection",
+            Url = Url.Action("MemberCollection", "MemberCollection"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 17V6h8v11M13 9h4l3 4v4h-7M8 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 6l2-3 2 3\" /></svg>",
+            Keys = new[] { "Member Collection", "MemberCollection" }
+        },
+        new MenuCard
+        {
+            Label = "Coll Int.Transfer",
+            Url = Url.Action("CollectionInternalTransfer", "CollectionInternalTransfer"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 8h10M7 16h10M10 5 7 8l3 3M14 13l3 3-3 3M5 4h14v16H5z\" /></svg>",
+            Keys = new[] { "Coll Int Transfer", "CollIntTransfer", "Collection Internal Transfer", "CollectionInternalTransfer", "Collection Int Transfer", "CollectionIntTransfer" }
+        },
+        new MenuCard
+        {
+            Label = "Reports",
+            Url = Url.Action("Report", "Report"),
+            Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 20V5h14v15M8 17v-5M12 17V8M16 17v-8M8 20h8\" /></svg>",
+            Keys = new[] { "Reports", "Report" }
+        }
+        //,
+        //new MenuCard
+        //{
+        //    Label = "RL Module",
+        //    Url = "#",
+        //    Icon = "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 8h10v8H4zM14 11h4l2 3v2h-6zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 5v3m4-3v3\" /></svg>",
+        //    Keys = new[] { "RL Module", "RLModule", "RL" }
+        //}
+    };
+
+    bool hasVisibleCards = false;
+}
+
+@functions {
+    public class MenuCard
+    {
+        public string Label { get; set; }
+
+        public string Url { get; set; }
+
+        public string Icon { get; set; }
+
+        public string[] Keys { get; set; }
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Menu - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+</head>
+<body class="apts-menu-body">
+    <main class="apts-menu-screen" aria-label="APTS menu screen">
+        <header class="apts-menu-header">
+            <button class="apts-menu-icon-button" type="button" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+            </button>
+
+            <a class="apts-menu-home" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-menu-logo" alt="Ayasto" />
+
+            <a class="apts-menu-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-menu-hero">
+            <p>Operations Menu</p>
+            <h1>Choose a workflow</h1>
+        </section>
+
+        <section class="apts-menu-grid" aria-label="Menu options">
+            @foreach (var card in cards)
+            {
+                if (!hasAccess(card.Keys))
+                {
+                    continue;
+                }
+
+                hasVisibleCards = true;
+                <a class="apts-menu-card" href="@card.Url">
+                    <span class="apts-menu-card__icon">
+                        @Html.Raw(card.Icon)
+                    </span>
+                    <span>@card.Label</span>
+                </a>
+            }
+
+            @if (!hasVisibleCards)
+            {
+                <p class="apts-form-save-status is-invalid">No menu access assigned.</p>
+            }
+        </section>
+    </main>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+
+

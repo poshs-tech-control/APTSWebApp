@@ -1,0 +1,159 @@
+@{
+    Layout = null;
+    ViewBag.Title = "Internal Transfer";
+    var factoryLocations = ViewBag.FactoryLocations ?? new List<object>();
+    var warehouseLocations = ViewBag.WarehouseLocations ?? new List<object>();
+    var clientLocations = ViewBag.ClientLocations ?? new List<object>();
+    string sessionLocationType = Convert.ToString(ViewBag.SessionLocationType);
+    string sessionLocationCode = Convert.ToString(ViewBag.SessionLocationCode);
+    string sessionLocationTitle = Convert.ToString(ViewBag.SessionLocationTitle);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Internal Transfer - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260629-2" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen" aria-label="Internal Transfer screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Back to menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>Internal Transfer</p>
+        </section>
+
+        <form class="apts-member-form apts-transfer-form"
+              action="@Url.Action("MemberDispatch", "InternalTransfer")"
+              method="post"
+              data-internal-transfer-form
+              data-transfer-member-validation-url="@Url.Action("ValidateTransferMember", "InternalTransfer")">
+            <input id="UserLocationType" name="userLocationType" type="hidden" value="@sessionLocationType" />
+            <input id="UserLocation" name="userLocation" type="hidden" value="@sessionLocationCode" />
+            <input id="UserLocationTitle" type="hidden" value="@sessionLocationTitle" />
+
+            <div class="apts-field">
+                <label for="TransferMemberNo">Scan Member</label>
+                <div class="apts-scan-input apts-receipt-scan-input">
+                    <input id="TransferMemberNo" name="TransferMemberNo" type="text" placeholder="Scan Member" data-transfer-member-input inputmode="text" />
+                    <button type="button" aria-label="Scan member QR code" data-scan-target="#TransferMemberNo">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM13 13h3v3h-3z" /></svg>
+                    </button>
+                </div>
+                <p class="apts-field-status" data-transfer-member-status aria-live="polite"></p>
+            </div>
+
+            <button class="apts-form-submit apts-transfer-member-add" type="button" data-transfer-summary>Add</button>
+
+            <div class="apts-scan-summary">
+                <span>Checked Members List</span>
+                <strong data-transfer-count>0</strong>
+            </div>
+
+            <section class="apts-scanned-members" data-transfer-list>
+                <p>No members checked yet.</p>
+            </section>
+
+            <div class="apts-form-divider apts-receipt-mode">Transfer Location</div>
+
+            <fieldset class="apts-receipt-source">
+                <legend>To Location Type</legend>
+                <label><input type="radio" name="toLocationType" value="Factory" /><span>Factory</span></label>
+                <label><input type="radio" name="toLocationType" value="Warehouse" checked /><span>Warehouse</span></label>
+                <label><input type="radio" name="toLocationType" value="Client" /><span>Client</span></label>
+            </fieldset>
+
+            <div class="apts-field apts-custom-select-field">
+                <label for="ToLocation">To Location</label>
+                <input id="ToLocation" name="toLocation" type="hidden" required data-custom-select-value />
+                <div class="apts-custom-select" data-custom-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Select To Location</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        @foreach (var location in factoryLocations)
+                        {
+                            <button type="button" role="option" data-transfer-location-option data-group="Factory" data-value="@location.LocationCode">@location.LocationTitle</button>
+                        }
+                        @foreach (var location in warehouseLocations)
+                        {
+                            <button type="button" role="option" data-transfer-location-option data-group="Warehouse" data-value="@location.LocationCode">@location.LocationTitle</button>
+                        }
+                        @foreach (var customer in clientLocations)
+                        {
+                            <button type="button" role="option" data-transfer-location-option data-group="Client" data-value="@customer.LocationCode">@customer.CustName</button>
+                        }
+                        <button type="button" role="option" data-transfer-empty hidden>No location found</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-transfer-actions">
+                <button class="apts-form-submit" type="button" data-transfer-clear>Clear</button>
+                <button class="apts-form-submit" type="submit">Next</button>
+            </div>
+        </form>
+
+        <section class="apts-qr-modal" data-qr-scanner hidden aria-label="QR code scanner">
+            <div class="apts-qr-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Scan QR Code</p>
+                    <button type="button" data-qr-close aria-label="Close scanner">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+                <div class="apts-qr-modal__camera">
+                    <video data-qr-video playsinline muted></video>
+                    <span></span>
+                </div>
+                <p class="apts-qr-modal__status" data-qr-status>Point the camera at the QR code.</p>
+            </div>
+        </section>
+
+        <section class="apts-receipt-group-modal" data-transfer-member-popup hidden role="dialog" aria-modal="true" aria-label="Transfer member details">
+            <div class="apts-receipt-group-modal__panel">
+                <div class="apts-receipt-group-modal__head">
+                    <div>
+                        <h2 data-transfer-group-size>Members Size</h2>
+                        <strong data-transfer-group-count>Count: 0</strong>
+                    </div>
+                    <button type="button" data-transfer-member-popup-close aria-label="Close member details">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+                <div class="apts-receipt-group-modal__body">
+                    <table class="apts-receipt-group-table">
+                        <thead><tr><th>Sr No</th><th>Type</th><th>Members</th></tr></thead>
+                        <tbody data-transfer-member-popup-details></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="@Url.Content("~/Scripts/apts-qr-scanner.js")?v=20260611-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
+    <script src="@Url.Content("~/Scripts/apts-background-challan.js")?v=20260707-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-internal-transfer.js")?v=20260713-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,70 @@
+﻿
+@{
+    Layout = null;
+}
+
+@Html.Partial("PV_mainhead")
+<link rel="stylesheet" href="../assets/libs/prismjs/themes/prism-coy.min.css">
+<style>
+    .modal-header {
+        background: linear-gradient(90deg, #153d77 0%, #0f766e 100%);
+        color: #fff;
+        border-bottom: 0;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .modal-header .modal-title {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .modal-header .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+        opacity: .9;
+    }
+
+    .modal-content {
+        border: 1px solid #94a3b8;
+    }
+
+    @@media (min-width: 992px) {
+        .app-header,
+        .footer {
+            padding-inline-start: 0 !important;
+        }
+
+        .app-content {
+            margin-inline-start: 0 !important;
+            margin-left: 0 !important;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+    @Html.Partial("PV_switcher")
+    @Html.Partial("PV_loader")
+    <div class="page">
+        @Html.Partial("PV_header")
+        @*@Html.Partial("PV_sidebar")*@
+        <div class="main-content app-content">
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+        @Html.Partial("PV_headersearch_modal")
+        @Html.Partial("PV_footer")
+
+    </div>
+    @Html.Partial("PV_commonjs")
+    @Html.Partial("PV_custom_switcherjs")
+    <!-- Prism JS -->
+    <script src="../assets/libs/prismjs/prism.js"></script>
+    <script src="../assets/js/prism-custom.js"></script>
+
+    <!-- Custom JS -->
+    <script src="../assets/js/custom.js"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>

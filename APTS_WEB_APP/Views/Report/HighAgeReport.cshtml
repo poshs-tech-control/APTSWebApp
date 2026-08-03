@@ -1,0 +1,125 @@
+﻿@model APTS_WEB_APP.Models.HighAgeReport
+
+@{
+    Layout = null;
+    ViewBag.Title = "High Age Pallet Report";
+    var firstLocation = Model != null && Model.LocationList.Count > 0 ? Model.LocationList[0] : null;
+    var selectedLocationValue = Model != null && !string.IsNullOrWhiteSpace(Model.LocationCode) ? Model.LocationCode : (firstLocation == null ? string.Empty : firstLocation.Value);
+    var selectedLocationText = firstLocation == null ? "No client found" : firstLocation.Text;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>High Age Pallet Report - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260620-3" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen" aria-label="High Age Pallet Report screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("Report", "Report")" aria-label="Back to reports">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>High Age Pallet Report</p>
+        </section>
+
+        <form class="apts-member-form apts-report-filter-form"
+              action="#"
+              method="post"
+              data-high-age-form
+              data-location-options-url="@Url.Action("GetHighAgeLocationOptions", "Report")"
+              data-report-url="@Url.Action("GetHighAgeReport", "Report")">
+            <div class="apts-form-divider apts-report-tab">Report</div>
+
+            <fieldset class="apts-report-mode apts-report-mode-two">
+                <legend>Report Location Type</legend>
+                <label><input type="radio" name="HighAgeType" value="Client" checked data-high-age-type /><span>Client</span></label>
+                <label><input type="radio" name="HighAgeType" value="Customer" data-high-age-type /><span>Customer</span></label>
+            </fieldset>
+
+            <div class="apts-field apts-custom-select-field" data-high-age-location-field>
+                <label for="HighAgeLocation" data-high-age-location-title>Client</label>
+                <input id="HighAgeLocation" name="HighAgeLocation" type="hidden" value="@selectedLocationValue" data-custom-select-value />
+                <div class="apts-custom-select" data-custom-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>@selectedLocationText</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        @if (Model != null && Model.LocationList.Count > 0)
+                        {
+                            for (int index = 0; index < Model.LocationList.Count; index++)
+                            {
+                                var item = Model.LocationList[index];
+                                <button type="button" role="option" data-value="@item.Value" aria-selected="@(index == 0 ? "true" : "false")">@item.Text</button>
+                            }
+                        }
+                        else
+                        {
+                            <button type="button" role="option" data-value="" aria-selected="true">No client found</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-field apts-report-number-field">
+                <label for="TotalDays">Total Days</label>
+                <input id="TotalDays" name="TotalDays" type="number" value="50" min="0" />
+            </div>
+
+            <button class="apts-form-submit apts-report-submit" type="submit">Submit</button>
+            <p class="apts-form-save-status" data-high-age-status aria-live="polite"></p>
+
+            <div class="apts-report-summary-actions">
+                <div class="apts-report-result-title">Pallet Dispatch Count: <strong data-high-age-count>0</strong></div>
+                <button class="apts-report-export-button"
+                        type="button"
+                        data-high-age-export
+                        title="Download Excel"
+                        aria-label="Download Excel"
+                        disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 3v5h5" />
+                        <path d="m9 11 6 6" />
+                        <path d="m15 11-6 6" />
+                    </svg>
+                </button>
+            </div>
+
+            <section class="apts-report-table apts-report-table-five" aria-label="High age pallet report result" data-high-age-table hidden>
+                <div class="apts-report-table__head" data-high-age-head>
+                    <span>LocationTitle</span>
+                    <span>PreDispatchdate</span>
+                    <span>TotalMember</span>
+                    <span>PreDispatch</span>
+                    <span>Age</span>
+                </div>
+                <div class="apts-report-table__body" data-high-age-rows></div>
+            </section>
+        </form>
+    </main>
+
+    <script src="~/Scripts/apts-custom-select.js"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260620"></script>
+    <script src="@Url.Content("~/Scripts/apts-high-age-report.js")?v=20260620-3"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+
+

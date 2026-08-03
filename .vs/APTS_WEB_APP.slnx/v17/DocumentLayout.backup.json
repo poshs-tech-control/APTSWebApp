@@ -1,0 +1,166 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|f:\\dot net\\vs 2022\\apts_web_app\\apts_web_app\\apts_web_app\\dataintraction\\dataaccess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\dataintraction\\dataaccess.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\controllers\\palletassemblecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\controllers\\palletassemblecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\controllers\\palletordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\controllers\\palletordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\controllers\\challancontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\controllers\\challancontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\helpers\\secretsettingreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\helpers\\secretsettingreader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\helpers\\challanmailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\helpers\\challanmailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\apts_web_app\\controllers\\memberreceiptcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5DB6FB52-05E1-4A6F-9391-3ECF7256B331}|APTS_WEB_APP\\APTS_WEB_APP.csproj|solutionrelative:apts_web_app\\controllers\\memberreceiptcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ChallanMailService.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Helpers\\ChallanMailService.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Helpers\\ChallanMailService.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Helpers\\ChallanMailService.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Helpers\\ChallanMailService.cs",
+              "ViewState": "AgIAAFcBAAAAAAAAAAAAAFcBAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-31T11:23:19.984Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PalletOrderController.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\PalletOrderController.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Controllers\\PalletOrderController.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\PalletOrderController.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Controllers\\PalletOrderController.cs",
+              "ViewState": "AgIAADkAAAAAAAAAAAAywEUAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-31T11:02:43.737Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ChallanController.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\ChallanController.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Controllers\\ChallanController.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\ChallanController.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Controllers\\ChallanController.cs",
+              "ViewState": "AgIAAPIAAAAAAAAAAAA0wAABAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-31T10:15:47.712Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Web.config",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Web.config",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Web.config",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Web.config",
+              "RelativeToolTip": "APTS_WEB_APP\\Web.config",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABEAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-07-30T06:39:40.88Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Controllers\\HomeController.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAAADMAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T05:26:54.931Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "MemberReceiptController.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\MemberReceiptController.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Controllers\\MemberReceiptController.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\MemberReceiptController.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Controllers\\MemberReceiptController.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAywCIAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-24T12:12:48.315Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PalletAssembleController.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\PalletAssembleController.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Controllers\\PalletAssembleController.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Controllers\\PalletAssembleController.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Controllers\\PalletAssembleController.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAIwDMAAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-22T05:36:44.227Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DataAccess.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\DataIntraction\\DataAccess.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\DataIntraction\\DataAccess.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\DataIntraction\\DataAccess.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\DataIntraction\\DataAccess.cs",
+              "ViewState": "AgIAAB4FAAAAAAAAAIAxwCoFAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T06:21:28.634Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "SecretSettingReader.cs",
+              "DocumentMoniker": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Helpers\\SecretSettingReader.cs",
+              "RelativeDocumentMoniker": "APTS_WEB_APP\\Helpers\\SecretSettingReader.cs",
+              "ToolTip": "F:\\Dot Net\\VS 2022\\APTS_WEB_APP\\APTS_WEB_APP\\APTS_WEB_APP\\Helpers\\SecretSettingReader.cs",
+              "RelativeToolTip": "APTS_WEB_APP\\Helpers\\SecretSettingReader.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-31T11:58:57.65Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

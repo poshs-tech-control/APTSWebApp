@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.microsoft.com/packaging/2010/07/manifest" Target="/MySql.Data.nuspec" Id="Rf088bf6af0d34831" />
+  <Relationship Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="/package/services/metadata/core-properties/12ce5b91410c4880b22537c47d0c03d0.psmdcp" Id="Reae3a7527d36409b" />
+</Relationships>

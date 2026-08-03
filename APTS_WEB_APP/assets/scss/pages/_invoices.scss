@@ -1,0 +1,193 @@
+/* Invoices */
+.invoice-card {
+    .top-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem;
+        padding-block-end: 0;
+    }
+
+    div {
+        &:first-child,
+        &:last-child {
+            h6 {
+                color: $text-muted;
+                font-weight: normal;
+                font-size: 14px;
+            }
+            h4 {
+                margin-block-end: 0;
+                font-size: 18px;
+                font-weight: normal;
+            }
+            p {
+                margin-block-end: 0;
+            }
+        }
+        &:nth-child(2) {
+            h6 {
+                color: $text-muted;
+                font-weight: normal;
+                font-size: 13px;
+            }
+            p {
+                margin-block-end: 0;
+                font-weight: 500;
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+.options-inv {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 11px;
+  font-size: 1rem;
+}
+  
+.inv-list-footer {
+  padding: 24px 32px !important;
+  .footer-card {
+    display: flex;
+    align-items: center;
+    div {
+      &:first-child {
+        margin-inline-end: 0.5rem;
+      }
+      &:nth-child(2) {
+        h6 {
+          color: $dark;
+          font-weight: normal;
+          margin-block-end: 0.25rem;
+          font-size: 14px;
+        }
+        p {
+          color: $text-muted;
+          margin-block-end: 0;
+          margin-block-start: 0.25rem;
+          font-size: 13px;
+          font-weight: normal;
+        }
+      }
+      &:last-child {
+        margin-inline-start: auto;
+        h6 {
+          font-weight: normal;
+          color: $text-muted;
+          font-size: 14px;
+          margin-block-end: 0.25rem;
+        }
+        h5 {
+          font-weight: normal;
+          color: $dark !important;
+          margin-block-end: 0.25rem;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+  
+.inv-det-td {
+  font-size: 0.8375rem;
+  color: $custom-black2;
+  font-weight: normal;
+}
+
+.inv-det-th table {
+  thead tr th {
+    color: $custom-black2;
+    background-color: $primary-01;
+  }
+}
+
+.inv-det {
+  td {
+    padding: 7px 10px !important;
+  }
+
+  .inv-det-tm {
+    color: $custom-black2 !important;
+    font-size: 1.125rem !important;
+    font-weight: bold !important;
+  }
+
+  .btn {
+    padding: 0.3rem 0.65rem !important;
+  }
+}
+
+.product-description-each {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 0.75rem;
+
+  .invoice-product-table {
+    flex: 1;
+
+    .dashed-border-bottom {
+      border-block-end: 1px dashed $default-border;
+    }
+
+    td,
+    th {
+      padding: 10px;
+      min-width: 150px;
+
+      &:last-child {
+        min-width: 75px;
+      }
+    }
+    .amount-cell {
+      text-align: right;
+      vertical-align: unset;
+      background-color: $primary-02;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      margin: 0;
+    }
+  }
+
+  .delete-row-btn {
+      padding: 6rem 0.5rem;
+      font-size: 20px !important;
+      cursor: pointer;
+
+      &:hover,
+      &:focus {
+          color: $danger !important;
+      }
+  }
+}
+
+.invoice-bottom-table-container {
+  .invoice-table-bottom {
+      td {
+          padding: 10px;
+          border: 1px solid $default-border;
+      }
+  }
+}
+
+.invoice-table-bottom {
+  input {
+      min-width: 100px;
+  }
+}
+
+@media(min-width:768px) {
+  .select-product-container {
+    .form-group {
+      width: 30% !important;
+    }
+  }
+}
+/* Invoices */

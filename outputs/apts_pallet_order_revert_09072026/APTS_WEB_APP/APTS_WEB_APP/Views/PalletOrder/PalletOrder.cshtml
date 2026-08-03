@@ -1,0 +1,150 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "Pallet Order";
+    var palletShapeList = ViewBag.PalletShapeList ?? new List<object>();
+    string sessionLocationCode = Convert.ToString(ViewBag.SessionLocationCode);
+    string sessionLocationTitle = string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.SessionLocationTitle)) ? "Selected Location" : Convert.ToString(ViewBag.SessionLocationTitle);
+    string sessionLocationTypeTitle = string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.SessionLocationTypeTitle)) ? "Location" : Convert.ToString(ViewBag.SessionLocationTypeTitle);
+    string sessionCustomerCode = Convert.ToString(ViewBag.SessionCustomerCode);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Pallet Order - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260629-7" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen" aria-label="Pallet Order screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Back to menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>Pallet Order</p>
+        </section>
+
+        <form class="apts-member-form"
+              action="#"
+              method="post"
+              data-pallet-order-form
+              data-sku-url="@Url.Action("GetMatchingSkus", "PalletOrder")"
+              data-submit-url="@Url.Action("SubmitPalletOrder", "PalletOrder")"
+              data-pallet-order-challan-url="@Url.Action("GeneratePalletOrderChallan", "Challan")">
+            <input id="Location" name="Location" type="hidden" value="@sessionLocationCode" />
+            <input id="CustomerCode" name="CustomerCode" type="hidden" value="@sessionCustomerCode" />
+
+            <div class="apts-receipt-context">
+                <span>@sessionLocationTypeTitle</span>
+                <strong>@sessionLocationTitle</strong>
+            </div>
+
+            <div class="apts-field">
+                <label for="InstructionsPreview">Instructions</label>
+                <button class="apts-instruction-button" type="button" data-instruction-open>
+                    <span id="InstructionsPreview">Add pallet instructions</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                </button>
+                <input id="Instructions" name="Instructions" type="hidden" />
+            </div>
+
+            <div class="apts-form-divider">Pallet Requirement</div>
+
+            <div class="apts-field apts-custom-select-field">
+                <label for="PalletShape">Pallet Shape</label>
+                <input id="PalletShape" name="PalletShape" type="hidden" data-sku-shape required data-custom-select-value />
+                <div class="apts-custom-select" data-custom-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Select Shape</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        @foreach (var shape in palletShapeList)
+                        {
+                            <button type="button" role="option" data-value="@shape.ParameterCode">@shape.ParameterName</button>
+                        }
+                        @if (palletShapeList.Count == 0)
+                        {
+                            <button type="button" role="option" data-value="">No shape found</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-two-column">
+                <div class="apts-field">
+                    <label for="Width">Width</label>
+                    <input id="Width" name="Width" type="number" min="1" placeholder="Width" data-sku-width required />
+                </div>
+
+                <div class="apts-field">
+                    <label for="Length">Length</label>
+                    <input id="Length" name="Length" type="number" min="1" placeholder="Length" data-sku-length required />
+                </div>
+            </div>
+
+            <button class="apts-form-submit" type="button" data-sku-search>Show Matching SKUs</button>
+
+            <section class="apts-sku-results" data-sku-results aria-label="Matching SKU list">
+                <p>Enter pallet shape, width and length to view matching SKUs.</p>
+            </section>
+
+            <button class="apts-form-submit" type="submit">Submit</button>
+            <p class="apts-form-save-status" data-pallet-order-status aria-live="polite"></p>
+        </form>
+
+
+        <section class="apts-instruction-modal apts-sku-detail-modal" data-sku-detail-modal hidden aria-label="Pallet SKU details">
+            <div class="apts-instruction-modal__panel apts-sku-detail-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Order Details</p>
+                    <button type="button" data-sku-detail-close aria-label="Close order details">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+                <dl class="apts-sku-detail-list" data-sku-detail-rows></dl>
+                <div class="apts-field">
+                    <label for="SkuDetailQty">Qty</label>
+                    <input id="SkuDetailQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Enter Qty" data-sku-detail-qty />
+                </div>
+                <button class="apts-form-submit" type="button" data-sku-detail-ok>OK</button>
+            </div>
+        </section>
+        <section class="apts-instruction-modal" data-instruction-modal hidden aria-label="Pallet instructions">
+            <div class="apts-instruction-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Instructions</p>
+                    <button type="button" data-instruction-close aria-label="Close instructions">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+                <textarea data-instruction-text rows="6" placeholder="Add pallet requirement instructions"></textarea>
+                <button class="apts-form-submit" type="button" data-instruction-save>Save Instructions</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="~/Scripts/apts-custom-select.js"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
+    <script src="@Url.Content("~/Scripts/apts-pallet-order.js")?v=20260701-3"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+
+
+
+

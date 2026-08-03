@@ -1,0 +1,44 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "APTS";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#092338" />
+    <title>APTS - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <script>
+        window.setTimeout(function () {
+            window.location.href = '@Url.Action("Login", "Home")';
+        }, 5000);
+    </script>
+</head>
+<body class="apts-splash-body">
+    <main class="apts-splash" aria-label="APTS splash screen">
+        <div class="apts-splash__ambient apts-splash__ambient--top"></div>
+        <div class="apts-splash__ambient apts-splash__ambient--bottom"></div>
+
+        <section class="apts-splash__content">
+            <div class="apts-splash__logo-shell" aria-hidden="true">
+                <span class="apts-splash__scan-line"></span>
+                <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-splash__logo" alt="" />
+            </div>
+
+            <p class="apts-splash__eyebrow">Smart pallet visibility</p>
+            <h1 class="apts-splash__title" aria-label="APTS app">
+                <span>A</span><span>P</span><span>T</span><span>S</span>
+            </h1>
+            <p class="apts-splash__subtitle">Ayasto Pallet Tracking System</p>
+            <p class="apts-splash__version">Version 1.0.0</p>
+        </section>
+    </main>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+

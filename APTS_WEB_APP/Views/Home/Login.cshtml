@@ -1,0 +1,205 @@
+@using System.Collections.Generic
+@{
+    Layout = null;
+    ViewBag.Title = "Login";
+    var locations = ViewBag.Locations as List<APTS_WEB_APP.Models.InternalTransfer.LocationItem> ?? new List<APTS_WEB_APP.Models.InternalTransfer.LocationItem>();
+    string selectedLocationCode = Convert.ToString(ViewBag.SelectedLocationCode);
+    var selectedLocation = locations.Find(location => string.Equals(selectedLocationCode, location.LocationCode, StringComparison.OrdinalIgnoreCase));
+    string selectedLocationTitle = selectedLocation == null ? "Select Location" : selectedLocation.LocationTitle;
+    string selectedLanguage = Convert.ToString(ViewBag.SelectedLanguage);
+    if (string.IsNullOrWhiteSpace(selectedLanguage))
+    {
+        selectedLanguage = "en";
+    }
+
+    var languages = new[]
+    {
+        new { Code = "en", Name = "English" },
+        new { Code = "hi", Name = "Hindi" },
+        new { Code = "mr", Name = "Marathi" },
+        new { Code = "gu", Name = "Gujarati" },
+        new { Code = "ta", Name = "Tamil" },
+        new { Code = "te", Name = "Telugu" },
+        new { Code = "kn", Name = "Kannada" },
+        new { Code = "ml", Name = "Malayalam" }
+    };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#092338" />
+    <title>Login - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260702-1" rel="stylesheet" />
+</head>
+<body class="apts-login-body">
+    <main class="apts-login" aria-label="APTS login screen">
+        <section class="apts-login__panel">
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-login__logo" alt="Ayasto" />
+
+            <div class="apts-login__heading">
+                <p>Ayasto Pallet Tracking System</p>
+                <h1>Login</h1>
+            </div>
+
+            <form class="apts-login__form" action="@Url.Action("Login", "Home")" method="post" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <div class="apts-login__field">
+                    <label for="LoginId">Login Id</label>
+                    <input id="LoginId" name="LoginId" type="text" autocomplete="username" inputmode="text" value="@ViewBag.LoginId" />
+                </div>
+
+                <div class="apts-login__field">
+                    <label for="Password">Password</label>
+                    <input id="Password" name="Password" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" />
+                </div>
+
+                <div class="apts-login__field apts-field apts-custom-select-field">
+                    <label for="Locations">Locations</label>
+                    <input id="Locations" name="Locations" type="hidden" value="@selectedLocationCode" required data-custom-select-value />
+                    <div class="apts-custom-select" data-custom-select>
+                        <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                            <span data-custom-select-label>@selectedLocationTitle</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                        <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                            <input class="apts-custom-select__search" type="search" placeholder="Search location" autocomplete="off" aria-label="Search locations" data-custom-select-search />
+                            @if (locations.Count > 0)
+                            {
+                                foreach (var location in locations)
+                                {
+                                    <button type="button"
+                                            role="option"
+                                            data-value="@location.LocationCode"
+                                            data-location-code="@location.LocationCode"
+                                            data-location-title="@location.LocationTitle"
+                                            aria-selected="@(string.Equals(selectedLocationCode, location.LocationCode, StringComparison.OrdinalIgnoreCase).ToString().ToLowerInvariant())">
+                                        @location.LocationTitle
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <button type="button" role="option" data-value="" disabled>No location found</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.LoginError)))
+                {
+                    <p class="apts-login__error">@ViewBag.LoginError</p>
+                }
+
+                <button class="apts-login__button" type="submit">Sign In</button>
+                <a class="apts-login__language-link" href="javascript:void(0);" data-language-open onclick="window.AptsLoginLanguage && window.AptsLoginLanguage.open(); return false;">Set Language</a>
+            </form>
+        </section>
+
+        <p class="apts-login__copyright">
+            Copyright &copy; @DateTime.Now.Year Ayasto Steelpac. All rights reserved.
+        </p>
+    </main>
+
+    <section class="apts-language-modal" data-language-modal hidden aria-label="Language settings">
+        <form class="apts-member-form apts-settings-form apts-login-language-form" action="@Url.Action("SetLanguage", "Home")" method="post">
+            @Html.AntiForgeryToken()
+
+            <button class="apts-language-modal__close" type="button" data-language-close aria-label="Close language settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+
+            <div class="apts-settings-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 0 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.3 7A2 2 0 0 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 0 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 0 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z" />
+                </svg>
+            </div>
+
+            <div class="apts-field">
+                <label for="LoginLanguage">Language</label>
+                <select id="LoginLanguage" name="language">
+                    @foreach (var language in languages)
+                    {
+                        <option value="@language.Code" selected="@(string.Equals(selectedLanguage, language.Code, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
+                            @language.Name
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <button class="apts-form-submit" type="submit">Save Settings</button>
+        </form>
+    </section>
+
+    <script src="@Url.Content("~/Scripts/apts-custom-select.js")?v=20260709-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
+    @if (!string.IsNullOrWhiteSpace(Convert.ToString(ViewBag.LoginPopupMessage)))
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                if (window.AptsProcessPopup) {
+                    window.AptsProcessPopup.show("@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Convert.ToString(ViewBag.LoginPopupMessage)))");
+                }
+            });
+        </script>
+    }
+    <script>
+        (function () {
+            var modal = document.querySelector("[data-language-modal]");
+            var openButton = document.querySelector("[data-language-open]");
+            var closeButton = document.querySelector("[data-language-close]");
+
+            function openModal() {
+                if (modal) {
+                    modal.removeAttribute("hidden");
+                    document.body.classList.add("apts-language-modal-open");
+                }
+            }
+
+            function closeModal() {
+                if (modal) {
+                    modal.setAttribute("hidden", "hidden");
+                    document.body.classList.remove("apts-language-modal-open");
+                }
+            }
+
+            window.AptsLoginLanguage = {
+                open: openModal,
+                close: closeModal
+            };
+
+            document.addEventListener("click", function (event) {
+                if (event.target.closest("[data-language-open]")) {
+                    event.preventDefault();
+                    openModal();
+                    return;
+                }
+
+                if (event.target.closest("[data-language-close]")) {
+                    event.preventDefault();
+                    closeModal();
+                }
+            });
+
+            if (modal) {
+                modal.addEventListener("click", function (event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    closeModal();
+                }
+            });
+        }());
+    </script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
