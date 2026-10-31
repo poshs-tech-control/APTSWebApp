@@ -40,7 +40,6 @@ namespace APTS_WEB_APP.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
-
         [HttpGet]
         public JsonResult ValidateAssembleMember(string tagRfid, string currentLocation)
         {
