@@ -1,2 +1,24 @@
-# Visual Studio local workspace settings and caches
+# Visual Studio
 .vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Node
+node_modules/
+
+# Visual Studio cache
+*.cache
+*.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Application runtime cache
+APTS_WEB_APP/App_Data/LoginLocationsCache.json

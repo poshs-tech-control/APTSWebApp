@@ -1551,6 +1551,7 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
             };
         }
 
+
         public PalletAssemble.AssembleSaveResult SavePalletAssemble(PalletAssemble.AssembleSaveRequest request, string userCode, string userName, string ipAddress)
         {
             if (!HasValidConnectionString)
