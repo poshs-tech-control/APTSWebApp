@@ -141,6 +141,42 @@ namespace APTS_WEB_APP.Controllers
             return Json(new { success = true, item = item });
         }
 
+        public ActionResult MemberByClientBatchNo()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public JsonResult GetMemberByClientBatchNoReport(MemberByClientBatchNoReport.Request request)
+        {
+            string clientBatchNo = request == null ? string.Empty : (request.ClientBatchNo ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(clientBatchNo))
+            {
+                return Json(new { success = false, message = "Please scan or enter Client Batch No.", rows = new MemberByClientBatchNoReport.ReportRow[0] });
+            }
+
+            if (clientBatchNo.Length > 50)
+            {
+                return Json(new { success = false, message = "Client Batch No cannot exceed 50 characters.", rows = new MemberByClientBatchNoReport.ReportRow[0] });
+            }
+
+            try
+            {
+                var rows = dataAccess.LoadMemberByClientBatchNoReport(clientBatchNo);
+                return Json(new
+                {
+                    success = true,
+                    message = rows.Count > 0 ? "Report loaded successfully." : "No members found for Client Batch No.",
+                    rows = rows
+                });
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("Members Details By ClientBatchNo report failed: {0}", ex);
+                return Json(new { success = false, message = "Unable to load Members Details By ClientBatchNo report. Please try again.", rows = new MemberByClientBatchNoReport.ReportRow[0] });
+            }
+        }
+
         public ActionResult DiscrepancyReport()
         {
             return View();

@@ -40,6 +40,7 @@ namespace APTS_WEB_APP.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+
         [HttpGet]
         public JsonResult ValidateAssembleMember(string tagRfid, string currentLocation)
         {
@@ -61,7 +62,8 @@ namespace APTS_WEB_APP.Controllers
                 memberSize = result == null ? string.Empty : result.MemberSize,
                 lastLocation = result == null ? string.Empty : result.LastLocation,
                 currentLocation = result == null ? string.Empty : result.CurrentLocation,
-                locationMismatch = result != null && result.LocationMismatch
+                locationMismatch = result != null && result.LocationMismatch,
+                requiresBypass = result != null && result.RequiresBypass
             }, JsonRequestBehavior.AllowGet);
         }
 

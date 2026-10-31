@@ -40,6 +40,7 @@ namespace APTS_WEB_APP.Controllers
             {
                 success = result.IsAllowed,
                 message = result.Message,
+                rfid = result.RfidNo,
                 palletCode = result.PalletCode,
                 palletStatus = result.PalletStatus,
                 palletCreatedDate = result.PalletCreatedDate,
@@ -128,7 +129,7 @@ namespace APTS_WEB_APP.Controllers
         [HttpPost]
         public async Task<ActionResult> ReadUploadText()
         {
-            OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, ConfigurationManager.AppSettings["GoogleVisionApiKey"]);
+            OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, GetGoogleVisionApiKey());
             if (!result.Success)
             {
                 return Json(new { success = false, message = result.Message, details = result.Details });
@@ -142,5 +143,10 @@ namespace APTS_WEB_APP.Controllers
             });
         }
 
+
+        private static string GetGoogleVisionApiKey()
+        {
+            return SecretSettingReader.Read("APTS_GOOGLE_VISION_API_KEY", "GoogleVisionApiKey");
+        }
     }
 }

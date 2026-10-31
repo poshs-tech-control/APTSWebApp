@@ -331,6 +331,7 @@ namespace APTS_WEB_APP.Controllers
                 || !ValidateField("Member Weight", request.MemberWeight, out message)
                 || !ValidateField("Member Size", request.SkuMemberSize, out message)
                 || !ValidateField("Production Location", request.ProductionLocation, out message)
+                || !ValidateField("Production Location Title", request.ProductionLocationTitle, out message)
                 || !ValidateField("Remarks", request.Remarks, out message))
             {
                 return false;
@@ -347,6 +348,7 @@ namespace APTS_WEB_APP.Controllers
             request.MemberWeight = HtmlInjectionGuard.TrimPlainText(request.MemberWeight);
             request.SkuMemberSize = HtmlInjectionGuard.TrimPlainText(request.SkuMemberSize);
             request.ProductionLocation = HtmlInjectionGuard.TrimPlainText(request.ProductionLocation);
+            request.ProductionLocationTitle = HtmlInjectionGuard.TrimPlainText(request.ProductionLocationTitle);
             request.Remarks = HtmlInjectionGuard.TrimPlainText(request.Remarks);
             return true;
         }

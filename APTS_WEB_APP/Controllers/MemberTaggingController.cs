@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -64,7 +63,7 @@ namespace APTS_WEB_APP.Controllers
         {
             try
             {
-                OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, ConfigurationManager.AppSettings["GoogleVisionApiKey"]);
+                OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, GetGoogleVisionApiKey());
                 if (!result.Success)
                 {
                     return Json(new { success = false, message = result.Message, details = result.Details });
@@ -96,6 +95,11 @@ namespace APTS_WEB_APP.Controllers
                 message = result == null ? "Unable to save member tagging." : result.Message,
                 totalRecords = result == null ? 0 : result.TotalRecords
             });
+        }
+
+        private static string GetGoogleVisionApiKey()
+        {
+            return SecretSettingReader.Read("APTS_GOOGLE_VISION_API_KEY", "GoogleVisionApiKey");
         }
 
         private static string ExtractMemberPlate(string text)

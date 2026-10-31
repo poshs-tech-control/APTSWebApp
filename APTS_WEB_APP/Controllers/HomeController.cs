@@ -60,7 +60,7 @@ namespace APTS_WEB_APP.Controllers
             string password = request.Password ?? string.Empty;
             string locations = (request.Locations ?? string.Empty).Trim();
 
-            List<InternalTransfer.LocationItem> loginLocations = LoadLoginLocations();
+            List<LoginLocationItem> loginLocations = LoadLoginLocations();
             ViewBag.LoginId = loginId;
             ViewBag.SelectedLocationCode = locations;
 
@@ -71,7 +71,7 @@ namespace APTS_WEB_APP.Controllers
                 return View();
             }
 
-            InternalTransfer.LocationItem selectedLocation = loginLocations.FirstOrDefault(location =>
+            LoginLocationItem selectedLocation = loginLocations.FirstOrDefault(location =>
                 string.Equals(location.LocationCode, locations, StringComparison.OrdinalIgnoreCase));
 
             if (selectedLocation == null || string.IsNullOrWhiteSpace(selectedLocation.LocationCode))
@@ -290,9 +290,9 @@ namespace APTS_WEB_APP.Controllers
             Response.Headers["Expires"] = "-1";
         }
 
-        private List<InternalTransfer.LocationItem> LoadLoginLocations()
+        private List<LoginLocationItem> LoadLoginLocations()
         {
-            List<InternalTransfer.LocationItem> locations = dataAccess.LoadLoginLocationList();
+            List<LoginLocationItem> locations = dataAccess.LoadLoginLocationList();
             ViewBag.Locations = locations;
             return locations;
         }
@@ -303,7 +303,7 @@ namespace APTS_WEB_APP.Controllers
             return long.TryParse(Convert.ToString(Session[key]), out value) ? value : 0;
         }
 
-        private string BuildLoginAuditTrail(string loginId, DataAccess.LoginUser loginUser, InternalTransfer.LocationItem selectedLocation)
+        private string BuildLoginAuditTrail(string loginId, DataAccess.LoginUser loginUser, LoginLocationItem selectedLocation)
         {
             var auditTrail = new JObject
             {

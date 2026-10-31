@@ -30,11 +30,19 @@
         }
 
         try {
-            window.sessionStorage.setItem("apts.pending-challan.v1", JSON.stringify({
+            var storageKey = "apts.pending-challan.v1";
+            var raw = window.sessionStorage.getItem(storageKey);
+            var pendingItems = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(pendingItems)) {
+                pendingItems = pendingItems ? [pendingItems] : [];
+            }
+            pendingItems.push({
                 endpoint: endpoint,
                 paramName: paramName,
-                code: code
-            }));
+                code: code,
+                attempts: 0
+            });
+            window.sessionStorage.setItem(storageKey, JSON.stringify(pendingItems));
             return true;
         } catch (error) {
             return false;

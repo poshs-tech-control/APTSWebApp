@@ -379,31 +379,29 @@
         }, 3200);
     }
 
-    async function generateChallanInBackground(form, palletOrderCode) {
+    function queueChallanAfterSave(form, palletOrderCode) {
         var endpoint = form ? form.getAttribute("data-pallet-order-challan-url") : "";
-        var body = new URLSearchParams();
-        body.append("palletOrderCode", palletOrderCode || "");
-
-        if (!endpoint || !palletOrderCode || !window.fetch) {
-            return;
+        if (!endpoint || !palletOrderCode || !window.sessionStorage) {
+            return false;
         }
 
         try {
-            var response = await fetch(endpoint, {
-                method: "POST",
-                credentials: "same-origin",
-                keepalive: true,
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-                },
-                body: body.toString()
-            });
-            var result = response.ok ? await response.json() : null;
-            if (result && result.success) {
-                showToast(result.message || "Challan generated and mail sent.");
+            var storageKey = "apts.pending-challan.v1";
+            var raw = window.sessionStorage.getItem(storageKey);
+            var pendingItems = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(pendingItems)) {
+                pendingItems = pendingItems ? [pendingItems] : [];
             }
+            pendingItems.push({
+                endpoint: endpoint,
+                paramName: "palletOrderCode",
+                code: palletOrderCode,
+                attempts: 0
+            });
+            window.sessionStorage.setItem(storageKey, JSON.stringify(pendingItems));
+            return true;
         } catch (error) {
+            return false;
         }
     }
 
@@ -444,7 +442,7 @@
                         setStatus("valid", result.message || "Pallet Order Submitted Successfully");
                     }
                     if (result.challanPending && result.palletOrderCode) {
-                        generateChallanInBackground(form, result.palletOrderCode);
+                        queueChallanAfterSave(form, result.palletOrderCode);
                     }
                     resetPalletOrderForm(form);
                     return;

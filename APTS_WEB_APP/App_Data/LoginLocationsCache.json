@@ -1,0 +1,86 @@
+[
+  {
+    "LocationCode": "CLOC00000007",
+    "CustomerCode": "CUS00000012",
+    "LocationTitle": "AM/NS Pune",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000012",
+    "CustomerCode": "",
+    "LocationTitle": "Chakan Godown",
+    "LocationType": "MISC0000020",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000008",
+    "CustomerCode": "",
+    "LocationTitle": "IXU",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000003",
+    "CustomerCode": "CUS00000009",
+    "LocationTitle": "JSW Khed",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000004",
+    "CustomerCode": "CUS00000010",
+    "LocationTitle": "Mahindra Accelo",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000011",
+    "CustomerCode": "CUS00000016",
+    "LocationTitle": "NEEL SSC",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000006",
+    "CustomerCode": "CUS00000011",
+    "LocationTitle": "POSCO - IPPC",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000013",
+    "CustomerCode": "CUS00000017",
+    "LocationTitle": "POSHS METAL AURANGABAD LLP",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000001",
+    "CustomerCode": "CUS00000008",
+    "LocationTitle": "Poshs Metal Industries",
+    "LocationType": "MISC0000018",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000010",
+    "CustomerCode": "",
+    "LocationTitle": "Sanaswadi",
+    "LocationType": "MISC0000019",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000005",
+    "CustomerCode": "",
+    "LocationTitle": "Shikrapur RFID",
+    "LocationType": "MISC0000019",
+    "LocationTypeName": ""
+  },
+  {
+    "LocationCode": "CLOC00000002",
+    "CustomerCode": "",
+    "LocationTitle": "Taloja",
+    "LocationType": "MISC0000019",
+    "LocationTypeName": ""
+  }
+]

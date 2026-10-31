@@ -1,5 +1,6 @@
 (function () {
     var storageKey = "apts.pending-challan.v1";
+    var maxAttempts = 3;
 
     function showToast(message, isError) {
         if (!message || !document.body) {
@@ -35,24 +36,47 @@
         }, 3200);
     }
 
-    function readPendingChallan() {
+    function normalizePending(raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+            return parsed;
+        }
+
+        return parsed ? [parsed] : [];
+    }
+
+    function savePendingChallans(items) {
         try {
-            var raw = window.sessionStorage.getItem(storageKey);
-            if (!raw) {
-                return null;
+            if (!items || !items.length) {
+                window.sessionStorage.removeItem(storageKey);
+                return;
             }
-            window.sessionStorage.removeItem(storageKey);
-            return JSON.parse(raw);
+
+            window.sessionStorage.setItem(storageKey, JSON.stringify(items));
         } catch (error) {
-            return null;
         }
     }
 
-    async function processPendingChallan() {
-        var pending = readPendingChallan();
-        if (!pending || !pending.endpoint || !pending.paramName || !pending.code || !window.fetch) {
-            return;
+    function readPendingChallans() {
+        try {
+            var raw = window.sessionStorage.getItem(storageKey);
+            return raw ? normalizePending(raw) : [];
+        } catch (error) {
+            window.sessionStorage.removeItem(storageKey);
+            return [];
         }
+    }
+
+    function isValidPending(pending) {
+        return pending && pending.endpoint && pending.paramName && pending.code;
+    }
+
+    async function sendPendingChallan(pending) {
+        if (!isValidPending(pending) || !window.fetch) {
+            return { remove: true };
+        }
+
+        pending.attempts = (pending.attempts || 0) + 1;
 
         var body = new URLSearchParams();
         body.append(pending.paramName, pending.code);
@@ -63,18 +87,59 @@
                 credentials: "same-origin",
                 headers: {
                     "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest"
                 },
                 body: body.toString()
             });
-            var result = response.ok ? await response.json() : null;
-            if (result && result.success) {
+            var contentType = response.headers.get("content-type") || "";
+            var result = null;
+            if (contentType.indexOf("application/json") >= 0) {
+                result = await response.json();
+            }
+
+            if (response.ok && result && result.success) {
                 showToast(result.message || "Challan generated and mail sent.");
-            } else if (result && result.message) {
+                return { remove: true };
+            }
+
+            if (result && result.message) {
+                pending.lastError = result.message;
                 showToast(result.message, true);
+            } else if (!response.ok) {
+                pending.lastError = "Challan mail request failed. HTTP " + response.status + " " + response.statusText + ".";
+            } else if (contentType.indexOf("text/html") >= 0) {
+                pending.lastError = "Challan mail request returned login/error page instead of JSON. Please login again or deploy latest server files.";
+            } else {
+                pending.lastError = "Challan mail request did not return a valid server response.";
             }
         } catch (error) {
+            pending.lastError = "Challan mail request failed in browser: " + (error && error.message ? error.message : "network/server error") + ".";
         }
+
+        if (pending.attempts >= maxAttempts) {
+            showToast(pending.lastError || "Challan mail not sent. Please check SMTP/server access.", true);
+            return { remove: true };
+        }
+
+        return { remove: false, pending: pending };
+    }
+
+    async function processPendingChallan() {
+        var pendingItems = readPendingChallans();
+        if (!pendingItems.length) {
+            return;
+        }
+
+        var remaining = [];
+        for (var i = 0; i < pendingItems.length; i++) {
+            var result = await sendPendingChallan(pendingItems[i]);
+            if (!result.remove && result.pending) {
+                remaining.push(result.pending);
+            }
+        }
+
+        savePendingChallans(remaining);
     }
 
     if (document.readyState === "loading") {
@@ -82,4 +147,7 @@
     } else {
         processPendingChallan();
     }
+
+    window.addEventListener("online", processPendingChallan);
+    window.addEventListener("focus", processPendingChallan);
 }());

@@ -1,0 +1,8 @@
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\bin\APTS_WEB_APP.dll.config
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\bin\APTS_WEB_APP.dll
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\bin\APTS_WEB_APP.pdb
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\obj\APTS_WEB_APP.csproj.AssemblyReference.cache
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\obj\APTS_WEB_APP.csproj.CoreCompileInputs.cache
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\obj\APTS_WEB.D707D7A5.Up2Date
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\obj\APTS_WEB_APP.dll
+F:\Dot Net\VS 2022\APTS_WEB_APP\APTS_WEB_APP\outputs\client-batch-report-build\obj\APTS_WEB_APP.pdb

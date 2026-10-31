@@ -1,0 +1,209 @@
+@using System.Collections.Generic
+@using System.Linq
+@{
+    Layout = null;
+    ViewBag.Title = "Member Master";
+    var skuList = ViewBag.SkuList as List<APTS_WEB_APP.Models.SkuListItem> ?? new List<APTS_WEB_APP.Models.SkuListItem>();
+    var currentDate = DateTime.Now.ToString("dd-MM-yyyy");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Member Master - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260703-member-master-2" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen" aria-label="Member Master screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Back to menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>Member Master</p>
+        </section>
+
+        <form class="apts-member-form"
+              action="#"
+              method="post"
+              data-skew-details-url="@Url.Action("GetSkewDetails", "MemberMaster")"
+              data-existing-qr-url="@Url.Action("ShowExistingQr", "MemberMaster")"
+              data-new-batch-validation-url="@Url.Action("ValidateNewBatchNo", "MemberMaster")"
+              data-save-url="@Url.Action("SaveMemberMaster", "MemberMaster")"
+              data-vision-endpoint="@Url.Action("ReadBatchText", "MemberMaster")">
+            <div class="apts-field apts-custom-select-field">
+                <label for="MemberMode">Member Type</label>
+                <input id="MemberMode" name="MemberMode" type="hidden" data-custom-select-value />
+                <div class="apts-custom-select" data-custom-select data-member-mode-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Select Member Type</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        <button type="button" role="option" data-member-mode-option data-value="new-manufactured">New Manufactured Member</button>
+                        <button type="button" role="option" data-member-mode-option data-value="existing-no-coin">Existing Member - No Coin or QR</button>
+                        <button type="button" role="option" data-member-mode-option data-value="existing-with-qr">Existing Member - With QR Code</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-field">
+                <label for="QrCode">Scan QR Code</label>
+                <div class="apts-scan-input">
+                    <input id="QrCode" name="QrCode" type="text" placeholder="Scan QR Code" inputmode="text" disabled />
+                    <button type="button" aria-label="Scan QR Code" data-scan-target="#QrCode" disabled>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM13 13h3v3h-3z" /></svg>
+                    </button>
+                </div>
+                <button class="apts-form-submit apts-member-show-button" type="button" data-show-existing-qr disabled>Show</button>
+            </div>
+
+            <div class="apts-field">
+                <label for="ExistingRfid">Existing RFID</label>
+                <input id="ExistingRfid" name="ExistingRfid" type="text" readonly class="apts-readonly-field" />
+                <input id="ExistingMemberCode" name="ExistingMemberCode" type="hidden" />
+            </div>
+
+            <div class="apts-field apts-custom-select-field">
+                <label for="Sku">SKU</label>
+                <input id="Sku" name="Sku" type="hidden" data-custom-select-value />
+                <input id="SkuText" name="SkuText" type="hidden" />
+                <input id="SkuWeight" name="MemberWeight" type="hidden" />
+                <input id="SkuMemberTypeCode" name="MemberTypeCode" type="hidden" />
+                <input id="SkuMemberSize" name="SkuMemberSize" type="hidden" />
+                <div class="apts-custom-select" data-custom-select data-sku-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Select</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        @if (skuList.Any())
+                        {
+                            foreach (var sku in skuList)
+                            {
+                                <button type="button"
+                                        role="option"
+                                        data-sku-option
+                                        data-value="@sku.SKEWCode"
+                                        data-text-column="@sku.TextColumn"
+                                        data-member-type="@sku.MemberTypeText"
+                                        data-member-size="@sku.MemberSize">
+                                    @sku.TextColumn
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <button type="button" role="option" data-value="">No SKU found</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-field">
+                <label for="NewBatchNo">New Batch No</label>
+                <div class="apts-scan-input">
+                    <input id="NewBatchNo" name="NewBatchNo" type="text" placeholder="Scan New Batch No" inputmode="text" />
+                    <button type="button" aria-label="Read New Batch No from camera" data-vision-open>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v10H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /></svg>
+                    </button>
+                </div>
+                <p class="apts-field-status" data-new-batch-status aria-live="polite"></p>
+            </div>
+
+            <div class="apts-field apts-custom-select-field">
+                <label for="ProductionLocation">Production Location</label>
+                <input id="ProductionLocation" name="ProductionLocation" type="hidden" value="CLOC00000010" data-custom-select-value />
+                <input id="ProductionLocationTitle" name="ProductionLocationTitle" type="hidden" value="Sanaswadi" />
+                <div class="apts-custom-select" data-custom-select data-production-location-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Sanaswadi</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        <button type="button" role="option" data-production-location-option data-value="CLOC00000010" data-location-title="Sanaswadi" aria-selected="true">Sanaswadi</button>
+                        <button type="button" role="option" data-production-location-option data-value="CLOC00000012" data-location-title="Chakan Godown">Chakan Godown</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="apts-field">
+                <label for="EntryDateText">Production / Entry Date</label>
+                <input id="EntryDateText" type="text" readonly class="apts-readonly-field" value="@currentDate" />
+            </div>
+
+            <div class="apts-member-actions">
+                <button class="apts-form-submit" type="submit">Submit</button>
+                <button class="apts-form-submit apts-form-secondary" type="button" data-member-cancel>Cancel</button>
+                <a class="apts-form-submit apts-member-tagging" href="@Url.Action("MemberTagging", "MemberTagging")">Member Tagging</a>
+            </div>
+
+            <p class="apts-form-save-status" data-member-save-status aria-live="polite"></p>
+        </form>
+
+        <section class="apts-qr-modal" data-qr-scanner hidden aria-label="QR code scanner">
+            <div class="apts-qr-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Scan QR Code</p>
+                    <button type="button" data-qr-close aria-label="Close scanner">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+
+                <div class="apts-qr-modal__camera">
+                    <video data-qr-video playsinline muted></video>
+                    <span></span>
+                </div>
+
+                <p class="apts-qr-modal__status" data-qr-status>Point the camera at the QR code.</p>
+            </div>
+        </section>
+
+        <section class="apts-qr-modal" data-vision-scanner hidden aria-label="Camera text reader">
+            <div class="apts-qr-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Read New Batch No</p>
+                    <button type="button" data-vision-close aria-label="Close camera">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+
+                <div class="apts-qr-modal__camera">
+                    <video data-vision-video playsinline muted></video>
+                    <canvas data-vision-canvas hidden></canvas>
+                    <span></span>
+                </div>
+
+                <div class="apts-vision-actions">
+                    <button class="apts-form-submit" type="button" data-vision-capture>Capture</button>
+                </div>
+                <p class="apts-qr-modal__status" data-vision-status>Point the camera at the New Batch No.</p>
+                <textarea class="apts-vision-text" data-vision-text readonly hidden></textarea>
+            </div>
+        </section>
+    </main>
+
+    <script src="~/Scripts/apts-custom-select.js"></script>
+    <script src="@Url.Content("~/Scripts/apts-qr-scanner.js")?v=20260611-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
+    <script src="@Url.Content("~/Scripts/apts-member-master.js")?v=20260805-production-location-custom"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>

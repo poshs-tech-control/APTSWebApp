@@ -253,6 +253,9 @@
 
             if (result && result.success) {
                 var successMessage = result.message || "Member validated successfully.";
+                if (input && result.rfid) {
+                    input.value = String(result.rfid).toUpperCase();
+                }
                 setMemberStatus("valid", "");
                 setPalletCode(result.palletCode || "");
                 setPalletDimensions(result.width, result.length1, result.length2);

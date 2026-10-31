@@ -2,7 +2,7 @@
 @{
     Layout = null;
     ViewBag.Title = "Login";
-    var locations = ViewBag.Locations as List<APTS_WEB_APP.Models.InternalTransfer.LocationItem> ?? new List<APTS_WEB_APP.Models.InternalTransfer.LocationItem>();
+    var locations = ViewBag.Locations as List<APTS_WEB_APP.Models.LoginLocationItem> ?? new List<APTS_WEB_APP.Models.LoginLocationItem>();
     string selectedLocationCode = Convert.ToString(ViewBag.SelectedLocationCode);
     var selectedLocation = locations.Find(location => string.Equals(selectedLocationCode, location.LocationCode, StringComparison.OrdinalIgnoreCase));
     string selectedLocationTitle = selectedLocation == null ? "Select Location" : selectedLocation.LocationTitle;

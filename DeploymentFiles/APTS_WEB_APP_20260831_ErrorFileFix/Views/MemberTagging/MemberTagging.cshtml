@@ -1,0 +1,140 @@
+@{
+    Layout = null;
+    ViewBag.Title = "Member Tagging Master";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071927" />
+    <title>Member Tagging Master - Ayasto Pallet Tracking System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Site.css")?v=20260703-member-tagging" rel="stylesheet" />
+</head>
+<body class="apts-form-body">
+    <main class="apts-form-screen" aria-label="Member Tagging Master screen">
+        <header class="apts-form-header">
+            <a class="apts-form-icon-button" href="@Url.Action("MemberMaster", "MemberMaster")" aria-label="Back to Member Master">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+            </a>
+
+            <a class="apts-form-icon-button" href="@Url.Action("Menu", "Menu")" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4z" /></svg>
+            </a>
+
+            <img src="~/assets/images/brand-logos/ayasto-logo.png" class="apts-form-logo" alt="Ayasto" />
+
+            <a class="apts-form-icon-button" href="@Url.Action("Logout", "Home")" aria-label="Logout">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5h6v14h-6v-2M4 12h11m0 0-4-4m4 4-4 4" /></svg>
+            </a>
+        </header>
+
+        <section class="apts-form-title">
+            <p>Member Tagging Master</p>
+        </section>
+
+        <form class="apts-member-form apts-member-tagging-form"
+              action="#"
+              method="post"
+              data-show-member-url="@Url.Action("ShowMember", "MemberTagging")"
+              data-validate-sticker-url="@Url.Action("ValidateSticker", "MemberTagging")"
+              data-save-url="@Url.Action("Save", "MemberTagging")"
+              data-vision-endpoint="@Url.Action("ReadPlateText", "MemberTagging")">
+            <div class="apts-field">
+                <label for="MemberPlate">Scan Member Plate</label>
+                <div class="apts-scan-input">
+                    <input id="MemberPlate" name="MemberPlate" type="text" inputmode="text" />
+                    <button type="button" aria-label="Read member plate from camera" data-vision-open>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v10H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /></svg>
+                    </button>
+                </div>
+                <button class="apts-form-submit apts-member-show-button" type="button" data-show-member>Show</button>
+            </div>
+
+            <div class="apts-field">
+                <label for="MemberCode">MemberCode</label>
+                <input id="MemberCode" name="MemberCode" type="text" readonly class="apts-readonly-field" />
+                <input id="OriginalRfid" name="Rfid" type="hidden" />
+            </div>
+
+            <div class="apts-field">
+                <label for="StickerCode">Scan QR Sticker</label>
+                <div class="apts-scan-input">
+                    <input id="StickerCode" name="StickerCode" type="text" inputmode="text" />
+                    <button type="button" aria-label="Scan QR Sticker" data-scan-target="#StickerCode">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 8h2v2H8zM14 8h2v2h-2zM8 14h2v2H8zM13 13h3v3h-3z" /></svg>
+                    </button>
+                </div>
+                <button class="apts-form-submit apts-member-show-button" type="button" data-add-sticker>Add</button>
+            </div>
+
+            <section class="apts-tagging-table" aria-label="Sticker code list">
+                <div class="apts-tagging-table__head">
+                    <span>Sr No</span>
+                    <span>Sticker Code</span>
+                </div>
+                <div class="apts-tagging-table__body" data-sticker-list>
+                    <p data-empty-stickers>No sticker added</p>
+                </div>
+            </section>
+
+            <div class="apts-member-actions">
+                <button class="apts-form-submit" type="submit">Submit</button>
+                <button class="apts-form-submit apts-form-secondary" type="button" data-member-tagging-cancel>Cancel</button>
+            </div>
+
+            <p class="apts-form-save-status" data-member-tagging-status aria-live="polite"></p>
+        </form>
+
+        <section class="apts-qr-modal" data-qr-scanner hidden aria-label="QR code scanner">
+            <div class="apts-qr-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Scan QR Code</p>
+                    <button type="button" data-qr-close aria-label="Close scanner">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+
+                <div class="apts-qr-modal__camera">
+                    <video data-qr-video playsinline muted></video>
+                    <span></span>
+                </div>
+
+                <p class="apts-qr-modal__status" data-qr-status>Point the camera at the QR code.</p>
+            </div>
+        </section>
+
+        <section class="apts-qr-modal" data-vision-scanner hidden aria-label="Camera text reader">
+            <div class="apts-qr-modal__panel">
+                <div class="apts-qr-modal__head">
+                    <p>Read Member Plate</p>
+                    <button type="button" data-vision-close aria-label="Close camera">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    </button>
+                </div>
+
+                <div class="apts-qr-modal__camera">
+                    <video data-vision-video playsinline muted></video>
+                    <canvas data-vision-canvas hidden></canvas>
+                    <span></span>
+                </div>
+
+                <div class="apts-vision-actions">
+                    <button class="apts-form-submit" type="button" data-vision-capture>Capture</button>
+                </div>
+                <p class="apts-qr-modal__status" data-vision-status>Point the camera at the member plate.</p>
+                <textarea class="apts-vision-text" data-vision-text readonly hidden></textarea>
+            </div>
+        </section>
+    </main>
+
+    <script src="@Url.Content("~/Scripts/apts-qr-scanner.js")?v=20260611-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
+    <script src="@Url.Content("~/Scripts/apts-member-tagging.js")?v=20260807-vision-secret"></script>
+    <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
+</body>
+</html>
+

@@ -37,6 +37,30 @@
         return (value || "").replace(/\s+/g, "").trim().toUpperCase();
     }
 
+    function decodeHtmlEntities(value) {
+        return String(value || "")
+            .replace(/&lt;/gi, "<")
+            .replace(/&gt;/gi, ">")
+            .replace(/&#60;/gi, "<")
+            .replace(/&#62;/gi, ">");
+    }
+
+    function containsHtmlInjection(value) {
+        var decodedValue = decodeHtmlEntities(value);
+        return /<|>|javascript\s*:|on[a-z]+\s*=/i.test(String(value || ""))
+            || /<|>|javascript\s*:|on[a-z]+\s*=/i.test(decodedValue);
+    }
+
+    function validatePlainInput(selector, label, statusSetter) {
+        var input = bySelector(selector);
+        if (!input || !containsHtmlInjection(input.value)) {
+            return true;
+        }
+
+        statusSetter("invalid", "HTML markup is not allowed in " + label + ".");
+        return false;
+    }
+
     function showPopup(message) {
         if (window.AptsProcessPopup) {
             window.AptsProcessPopup.show(message || "Done");
@@ -176,6 +200,11 @@
         var url = getFormUrl("data-skew-details-url");
 
         clearStoredSkewDetails();
+        if (containsHtmlInjection(skewCode)) {
+            setSaveStatus("invalid", "HTML markup is not allowed in SKU code.");
+            return Promise.resolve(false);
+        }
+
         if (!url || !skewCode || !window.fetch) {
             return Promise.resolve(false);
         }
@@ -209,6 +238,11 @@
 
         if (input && input.value !== batchNo) {
             input.value = batchNo;
+        }
+
+        if (containsHtmlInjection(input ? input.value : "") || containsHtmlInjection(batchNo)) {
+            setNewBatchStatus("invalid", "HTML markup is not allowed in New Batch No.");
+            return Promise.resolve(false);
         }
 
         if (!batchNo) {
@@ -279,6 +313,11 @@
 
         if (input) {
             input.value = qrCode;
+        }
+
+        if (containsHtmlInjection(input ? input.value : "") || containsHtmlInjection(qrCode)) {
+            setSaveStatus("invalid", "HTML markup is not allowed in QR Code.");
+            return;
         }
 
         if (!qrCode) {
@@ -357,10 +396,60 @@
             button.setAttribute("aria-expanded", "false");
         }
     }
+
+    function syncProductionLocationFromOption(option) {
+        var titleInput = bySelector("#ProductionLocationTitle");
+        if (!option) {
+            return;
+        }
+
+        setValue("#ProductionLocation", option.getAttribute("data-value") || "");
+        if (titleInput) {
+            titleInput.value = option.getAttribute("data-location-title") || option.textContent.trim();
+        }
+    }
+
+    function syncProductionLocationTitle() {
+        var currentCode = bySelector("#ProductionLocation");
+        var selectedOption = bySelector("[data-production-location-option][aria-selected='true']");
+        var matchingOption = currentCode ? bySelector("[data-production-location-option][data-value='" + currentCode.value + "']") : null;
+        syncProductionLocationFromOption(selectedOption || matchingOption);
+    }
+
+    function resetProductionLocationSelect(form) {
+        var select = form ? form.querySelector("[data-production-location-select]") : null;
+        var defaultOption = select ? select.querySelector("[data-production-location-option][data-value='CLOC00000010']") : null;
+        var label = select ? select.querySelector("[data-custom-select-label]") : null;
+        var menu = select ? select.querySelector("[data-custom-select-menu]") : null;
+        var button = select ? select.querySelector("[data-custom-select-button]") : null;
+
+        if (select) {
+            select.classList.remove("is-open");
+        }
+
+        if (label) {
+            label.textContent = "Sanaswadi";
+        }
+
+        if (menu) {
+            menu.hidden = true;
+            menu.querySelectorAll("[role='option']").forEach(function (option) {
+                option.toggleAttribute("aria-selected", option === defaultOption);
+            });
+        }
+
+        if (button) {
+            button.setAttribute("aria-expanded", "false");
+        }
+
+        syncProductionLocationFromOption(defaultOption);
+    }
+
     function resetMemberMasterForm(form) {
         form.reset();
         resetCustomSelect(form);
         resetMemberModeSelect(form);
+        resetProductionLocationSelect(form);
         clearStoredSkewDetails();
         clearExistingQrDetails();
         setValue("#Sku", "");
@@ -376,6 +465,20 @@
         var mode = bySelector("#MemberMode");
         if (!mode || !mode.value) {
             setSaveStatus("invalid", "Please select Member Type.");
+            return false;
+        }
+
+        if (!validatePlainInput("#MemberMode", "Member Type", setSaveStatus)
+            || !validatePlainInput("#QrCode", "QR Code", setSaveStatus)
+            || !validatePlainInput("#ExistingRfid", "Existing RFID", setSaveStatus)
+            || !validatePlainInput("#ExistingMemberCode", "Existing Member Code", setSaveStatus)
+            || !validatePlainInput("#Sku", "SKU", setSaveStatus)
+            || !validatePlainInput("#SkuText", "SKU", setSaveStatus)
+            || !validatePlainInput("#SkuWeight", "Member Weight", setSaveStatus)
+            || !validatePlainInput("#SkuMemberTypeCode", "Member Type Code", setSaveStatus)
+            || !validatePlainInput("#SkuMemberSize", "Member Size", setSaveStatus)
+            || !validatePlainInput("#NewBatchNo", "New Batch No", setSaveStatus)
+            || !validatePlainInput("#ProductionLocation", "Production Location", setSaveStatus)) {
             return false;
         }
 
@@ -407,6 +510,8 @@
             setSaveStatus("invalid", "Unable to save member.");
             return;
         }
+
+        syncProductionLocationTitle();
 
         if (!formHasRequiredDetails(form)) {
             return;
@@ -580,6 +685,12 @@
             return;
         }
 
+        var productionLocationOption = event.target.closest("[data-production-location-option]");
+        if (productionLocationOption) {
+            syncProductionLocationFromOption(productionLocationOption);
+            return;
+        }
+
         if (event.target.closest("[data-show-existing-qr]")) {
             showExistingQr();
             return;
@@ -616,11 +727,20 @@
         if (event.target && event.target.matches("#NewBatchNo")) {
             validateNewBatchNo();
         }
+
+
     });
 
     document.addEventListener("input", function (event) {
         if (event.target && (event.target.matches("#QrCode") || event.target.matches("#NewBatchNo"))) {
             event.target.value = normalizeScan(event.target.value);
+            if (containsHtmlInjection(event.target.value)) {
+                if (event.target.matches("#NewBatchNo")) {
+                    setNewBatchStatus("invalid", "HTML markup is not allowed in New Batch No.");
+                } else {
+                    setSaveStatus("invalid", "HTML markup is not allowed in QR Code.");
+                }
+            }
         }
     });
 
@@ -632,6 +752,8 @@
         if (event.target && event.target.matches("#NewBatchNo")) {
             validateNewBatchNo();
         }
+
+
     });
 
     document.addEventListener("submit", function (event) {

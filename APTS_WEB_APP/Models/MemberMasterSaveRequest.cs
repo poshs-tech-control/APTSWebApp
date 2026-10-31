@@ -24,6 +24,8 @@ namespace APTS_WEB_APP.Models
 
         public string ProductionLocation { get; set; }
 
+        public string ProductionLocationTitle { get; set; }
+
         public string Remarks { get; set; }
     }
 }

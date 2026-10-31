@@ -22,6 +22,9 @@
     var messageCloseCallback = null;
     var pendingBypassMember = null;
     var scannedMembers = [];
+    var isSubmitting = false;
+    var isValidatingMember = false;
+    var isBypassingMember = false;
 
     function showPopup(message, onClose) {
         showMessagePopup(message, onClose, "", "error");
@@ -203,10 +206,11 @@
         });
     }
 
-    function getMatchingSizeRules(memberSize) {
+    function getMatchingSizeRules(memberSize, memberType) {
         var normalizedSize = normalizeCompareValue(memberSize);
+        var labels = getPreferredSizeRuleLabels(memberType);
         return getSizeRules().filter(function (rule) {
-            return rule.size === normalizedSize;
+            return rule.size === normalizedSize && labels.indexOf(rule.label) >= 0;
         });
     }
 
@@ -234,31 +238,19 @@
     }
 
     function getAvailableSizeRule(memberSize, memberType) {
-        var matchingRules = getMatchingSizeRules(memberSize);
-        var preferredLabels = getPreferredSizeRuleLabels(memberType);
-        var preferredRules = preferredLabels.length
-            ? matchingRules.filter(function (rule) { return preferredLabels.indexOf(rule.label) >= 0; })
-            : matchingRules;
-        var candidateRules = preferredRules.length ? preferredRules : matchingRules;
-
-        return candidateRules.filter(function (rule) {
+        return getMatchingSizeRules(memberSize, memberType).filter(function (rule) {
             return getScannedRuleCount(rule) < rule.qty;
         })[0] || null;
     }
 
     function getSizeCompleteMessage(memberSize, memberType) {
-        var matchingRules = getMatchingSizeRules(memberSize);
-        var preferredLabels = getPreferredSizeRuleLabels(memberType);
-        var preferredRules = preferredLabels.length
-            ? matchingRules.filter(function (rule) { return preferredLabels.indexOf(rule.label) >= 0; })
-            : matchingRules;
-        var completedRule = (preferredRules.length ? preferredRules : matchingRules).filter(function (rule) {
+        var completedRule = getMatchingSizeRules(memberSize, memberType).filter(function (rule) {
             return getScannedRuleCount(rule) >= rule.qty;
         })[0];
 
         return completedRule
             ? completedRule.label + " size " + memberSize + " required quantity is already complete."
-            : "Member size " + (memberSize || "-") + " is not required for this order.";
+            : "Member type " + (memberType || "-") + " with size " + (memberSize || "-") + " is not required for this order.";
     }
 
     function getCurrentLocation() {
@@ -270,9 +262,32 @@
         return customerField ? customerField.getAttribute("data-assemble-location-code") || "" : "";
     }
 
-    function addValidatedMember(member) {
+    function validateMemberForOrder(member) {
+        if (!selectedOrder) {
+            showPopup("Please select a pallet order before adding members.");
+            return null;
+        }
         if (hasScannedMember(member)) {
             showDuplicateMemberMessage();
+            return null;
+        }
+
+        var totalRequired = getNumber(selectedOrder, "TotalMemQty");
+        var sizeRule = getAvailableSizeRule(member.memberSize, member.memberType);
+        var message = totalRequired > 0 && scannedMembers.length >= totalRequired
+            ? "Required member quantity is already complete for this pallet order."
+            : !sizeRule ? getSizeCompleteMessage(member.memberSize, member.memberType) : "";
+        if (message) {
+            setMemberStatus(message, "invalid");
+            showPopup(message);
+            return null;
+        }
+        return sizeRule;
+    }
+
+    function addValidatedMember(member) {
+        var sizeRule = validateMemberForOrder(member);
+        if (!sizeRule) {
             return;
         }
 
@@ -282,7 +297,7 @@
             memberCode: member.memberCode || "",
             memberType: member.memberType || "",
             memberSize: member.memberSize || "",
-            sizeRuleLabel: member.sizeRuleLabel || ""
+            sizeRuleLabel: sizeRule.label
         });
 
         if (memberInput) {
@@ -336,11 +351,17 @@
             return;
         }
 
-        if (bypassModal && bypassModal.classList.contains("is-loading")) {
+        if (isBypassingMember || isSubmitting || (bypassModal && bypassModal.classList.contains("is-loading"))) {
             return;
         }
 
         var member = pendingBypassMember;
+        if (!validateMemberForOrder(member)) {
+            closeBypassModal();
+            return;
+        }
+        var bypassOrder = selectedOrder;
+        var bypassMembers = scannedMembers;
         var body = [
             "rfid=" + encodeURIComponent(member.rfid || ""),
             "palletOrderdtlCode=" + encodeURIComponent(getValue(selectedOrder, "PalletOrderdtlCode")),
@@ -349,7 +370,8 @@
 
         setMemberStatus("Updating member location...", "loading");
         setBypassLoading(true);
-        fetch(url, {
+        isBypassingMember = true;
+        return fetch(url, {
             method: "POST",
             credentials: "same-origin",
             headers: {
@@ -367,6 +389,9 @@
             })
             .then(function (result) {
                 closeBypassModal();
+                if (selectedOrder !== bypassOrder || scannedMembers !== bypassMembers) {
+                    return;
+                }
                 if (!result || result.success === false) {
                     setMemberStatus(result && result.message ? result.message : "Member bypass is not allowed.", "invalid");
                     showPopup(result && result.message ? result.message : "Member bypass is not allowed.");
@@ -377,8 +402,15 @@
             })
             .catch(function () {
                 closeBypassModal();
+                if (selectedOrder !== bypassOrder || scannedMembers !== bypassMembers) {
+                    return;
+                }
                 setMemberStatus("Unable to continue member bypass. Please try again.", "invalid");
                 showPopup("Unable to continue member bypass. Please try again.");
+            })
+            .then(function () {
+                isBypassingMember = false;
+                setBypassLoading(false);
             });
     }
 
@@ -458,6 +490,7 @@
                 return response.json();
             })
             .then(function (result) {
+                isSubmitting = false;
                 if (!result || result.success === false) {
                     setOrderMessage(result && result.message ? result.message : "Unable to load pallet orders.");
                     return;
@@ -538,6 +571,7 @@
                 return response.ok ? response.json() : null;
             })
             .then(function (result) {
+                isSubmitting = false;
                 if (!result || result.success === false) {
                     return;
                 }
@@ -604,6 +638,9 @@
     }
 
     function addMember() {
+        if (isSubmitting || isValidatingMember || isBypassingMember) {
+            return;
+        }
         var value = memberInput ? memberInput.value.trim().toUpperCase() : "";
         var url = form ? form.getAttribute("data-assemble-validate-url") : "";
         if (!value) {
@@ -636,8 +673,11 @@
         }
 
         setMemberStatus("Validating member...", "loading");
+        isValidatingMember = true;
+        var scanOrder = selectedOrder;
+        var scanMembers = scannedMembers;
 
-        fetch(url + "?tagRfid=" + encodeURIComponent(value) + "&currentLocation=" + encodeURIComponent(getCurrentLocation()), {
+        return fetch(url + "?tagRfid=" + encodeURIComponent(value) + "&currentLocation=" + encodeURIComponent(getCurrentLocation()), {
             method: "GET",
             credentials: "same-origin",
             headers: {
@@ -652,6 +692,9 @@
                 return response.json();
             })
             .then(function (result) {
+                if (selectedOrder !== scanOrder || scannedMembers !== scanMembers) {
+                    return;
+                }
                 if (!result || result.success === false) {
                     setMemberStatus(result && result.message ? result.message : "Member is not in Pre Dispatch status.", "invalid");
                     showPopup(result && result.message ? result.message : "Member is not in Pre Dispatch status.");
@@ -695,22 +738,30 @@
                     currentLocation: result.currentLocation || getCurrentLocation()
                 };
 
-                if (result.locationMismatch) {
+                if (result.locationMismatch || result.requiresBypass) {
                     pendingBypassMember = validatedMember;
-                    continueBypass();
-                    return;
+                    return continueBypass();
                 }
 
                 addValidatedMember(validatedMember);
             })
             .catch(function () {
+                if (selectedOrder !== scanOrder || scannedMembers !== scanMembers) {
+                    return;
+                }
                 setMemberStatus("Unable to validate member right now. Please try again.", "invalid");
                 showPopup("Unable to validate member right now. Please try again.");
+            })
+            .then(function () {
+                isValidatingMember = false;
             });
     }
 
     function submitAssemble() {
         var url = form ? form.getAttribute("data-assemble-save-url") : "";
+        if (isSubmitting || isValidatingMember || isBypassingMember) {
+            return;
+        }
         if (!selectedOrder) {
             showPopup("Please select a pallet order before submit.");
             return;
@@ -732,6 +783,19 @@
             return;
         }
 
+        var rules = getSizeRules();
+        var invalidMember = scannedMembers.some(function (member) {
+            return !getMatchingSizeRules(member.memberSize, member.memberType).some(function (rule) {
+                return rule.label === member.sizeRuleLabel;
+            });
+        });
+        if (invalidMember || !rules.length || rules.some(function (rule) {
+            return getScannedRuleCount(rule) !== rule.qty;
+        })) {
+            showPopup("Please scan the required quantity for each member type and size before submit.");
+            return;
+        }
+
         var bodyParts = [
             "ClientLocation=" + encodeURIComponent(getSelectedCustomerLocationCode() || getValue(selectedOrder, "Customer")),
             "ToLocation=" + encodeURIComponent(getValue(selectedOrder, "Customer")),
@@ -750,6 +814,7 @@
 
         var body = bodyParts.join("&");
 
+        isSubmitting = true;
         setMemberStatus("Saving pallet assemble...", "loading");
         fetch(url, {
             method: "POST",
@@ -768,6 +833,7 @@
                 return response.json();
             })
             .then(function (result) {
+                isSubmitting = false;
                 if (!result || result.success === false) {
                     setMemberStatus(result && result.message ? result.message : "Unable to save Pallet Assemble.", "invalid");
                     showPopup(result && result.message ? result.message : "Unable to save Pallet Assemble.");
@@ -782,6 +848,7 @@
                 });
             })
             .catch(function () {
+                isSubmitting = false;
                 setMemberStatus("Unable to save Pallet Assemble. Please try again.", "invalid");
                 showPopup("Unable to save Pallet Assemble. Please try again.");
             });

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -159,7 +158,7 @@ namespace APTS_WEB_APP.Controllers
         [HttpPost]
         public async Task<ActionResult> ReadUploadText()
         {
-            OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, ConfigurationManager.AppSettings["GoogleVisionApiKey"]);
+            OcrReadResult result = await QrOcrHelper.ReadGoogleVisionTextAsync(Request.InputStream, GetGoogleVisionApiKey());
             if (!result.Success)
             {
                 return Json(new { success = false, message = result.Message, details = result.Details });
@@ -314,6 +313,11 @@ namespace APTS_WEB_APP.Controllers
 
             return batches;
         }
+        private static string GetGoogleVisionApiKey()
+        {
+            return SecretSettingReader.Read("APTS_GOOGLE_VISION_API_KEY", "GoogleVisionApiKey");
+        }
+
     }
 }
 

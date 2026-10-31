@@ -1,0 +1,1976 @@
+[
+  {
+    "name": "Login and Access",
+    "code": "LOG",
+    "scope": "Login, location access and menu visibility",
+    "note": "",
+    "rows": [
+      {
+        "field": "Login Id",
+        "validation": "Login Id is required.",
+        "sample": "Leave Login Id blank.",
+        "message": "Please enter Login Id.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Please enter Login Id.",
+        "note": ""
+      },
+      {
+        "field": "Login Id length",
+        "validation": "Maximum 50 characters.",
+        "sample": "Enter 51 characters.",
+        "message": "Login Id cannot exceed 50 characters.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Login Id cannot exceed 50 characters.",
+        "note": ""
+      },
+      {
+        "field": "Login Id characters",
+        "validation": "Only letters, digits, underscore, dot, @, hyphen and spaces.",
+        "sample": "Enter USER#01.",
+        "message": "Login Id contains invalid characters.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Login Id contains invalid characters.",
+        "note": ""
+      },
+      {
+        "field": "Password",
+        "validation": "Password is required.",
+        "sample": "Leave password blank.",
+        "message": "Please enter Password.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Please enter Password.",
+        "note": ""
+      },
+      {
+        "field": "Password length",
+        "validation": "Maximum 100 characters.",
+        "sample": "Enter 101 characters.",
+        "message": "Password cannot exceed 100 characters.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Password cannot exceed 100 characters.",
+        "note": ""
+      },
+      {
+        "field": "Location",
+        "validation": "Location is required.",
+        "sample": "Leave location blank.",
+        "message": "Please select Location.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Please select Location.",
+        "note": ""
+      },
+      {
+        "field": "Location length",
+        "validation": "Location code maximum 50 characters.",
+        "sample": "Submit a 51-character location code.",
+        "message": "Location cannot exceed 50 characters.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Location cannot exceed 50 characters.",
+        "note": ""
+      },
+      {
+        "field": "Location characters",
+        "validation": "Location code permits letters, digits, underscore, hyphen and spaces.",
+        "sample": "Submit LOC#01.",
+        "message": "Location contains invalid characters.",
+        "layer": "Server",
+        "file": "Models/LoginInputModel.cs",
+        "needle": "Location contains invalid characters.",
+        "note": ""
+      },
+      {
+        "field": "Location lookup",
+        "validation": "Selected location must exist in the loaded location list.",
+        "sample": "Submit an unknown location code.",
+        "message": "Please select valid Location.",
+        "layer": "Server",
+        "file": "Controllers/HomeController.cs",
+        "needle": "Please select valid Location.",
+        "note": ""
+      },
+      {
+        "field": "Credentials",
+        "validation": "Login Id and password must match a valid user.",
+        "sample": "Use an incorrect password.",
+        "message": "Invalid Login Id or Password.",
+        "layer": "Server",
+        "file": "Controllers/HomeController.cs",
+        "needle": "Invalid Login Id or Password.",
+        "note": ""
+      },
+      {
+        "field": "Location permission",
+        "validation": "User must have access to the selected location.",
+        "sample": "Choose a location without user access.",
+        "message": "Access not granted for selected location.",
+        "layer": "Server",
+        "file": "Controllers/HomeController.cs",
+        "needle": "Access not granted for selected location.",
+        "note": ""
+      },
+      {
+        "field": "Failed login lockout",
+        "validation": "After 5 failed attempts, further login attempts are locked for 15 minutes.",
+        "sample": "Fail login 5 times, then try again.",
+        "message": "Account locked due to multiple failed login attempts. Please try again after [minutes] minute(s).",
+        "layer": "Server",
+        "file": "Controllers/HomeController.cs",
+        "needle": "Account locked due to multiple failed login attempts.",
+        "note": "Lockout uses the application cache."
+      },
+      {
+        "field": "Login request token",
+        "validation": "Login POST requires an anti-forgery token.",
+        "sample": "Submit login without a valid token.",
+        "message": "Request rejected by anti-forgery validation.",
+        "layer": "Server",
+        "file": "Controllers/HomeController.cs",
+        "needle": "[ValidateAntiForgeryToken]",
+        "note": ""
+      },
+      {
+        "field": "Menu visibility",
+        "validation": "Only menu cards matching the user menu access aliases are displayed.",
+        "sample": "Login as a user with no assigned menus.",
+        "message": "No menu access assigned.",
+        "layer": "Browser",
+        "file": "Views/Menu/Menu.cshtml",
+        "needle": "No menu access assigned.",
+        "note": "This row describes menu visibility, not endpoint authorization."
+      }
+    ]
+  },
+  {
+    "name": "Member Master",
+    "code": "MM",
+    "scope": "New members and existing QR batch mapping",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member Type",
+        "validation": "Member mode must be selected.",
+        "sample": "Submit without selecting Member Type.",
+        "message": "Please select Member Type.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Please select Member Type.",
+        "note": ""
+      },
+      {
+        "field": "Plain text fields",
+        "validation": "HTML markup is rejected in member fields, SKU, QR and batch values.",
+        "sample": "Enter <b>ABC</b> in New Batch No.",
+        "message": "HTML markup is not allowed in New Batch No.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "HTML markup is not allowed in New Batch No.",
+        "note": ""
+      },
+      {
+        "field": "SKU",
+        "validation": "SKU is required for new-member mode.",
+        "sample": "Select new-member mode and leave SKU blank.",
+        "message": "Please select SKU.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Please select SKU.",
+        "note": ""
+      },
+      {
+        "field": "SKU lookup",
+        "validation": "Selected SKU must have available master details.",
+        "sample": "Submit a SKU with no matching details.",
+        "message": "SKU details not found.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "SKU details not found.",
+        "note": ""
+      },
+      {
+        "field": "New Batch No",
+        "validation": "Scan or enter the new batch number.",
+        "sample": "Leave New Batch No blank.",
+        "message": "Please scan New Batch No.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Please scan New Batch No.",
+        "note": ""
+      },
+      {
+        "field": "Batch master",
+        "validation": "Batch-number master must be available.",
+        "sample": "Validate a batch when the master table is unavailable.",
+        "message": "New batch number master table not found.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "New batch number master table not found.",
+        "note": ""
+      },
+      {
+        "field": "Batch upload",
+        "validation": "New batch number must exist in the uploaded batch master.",
+        "sample": "Scan an unuploaded batch number.",
+        "message": "New Batch No not uploaded.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "New Batch No not uploaded.",
+        "note": ""
+      },
+      {
+        "field": "Batch active flag",
+        "validation": "Uploaded batch number must be active.",
+        "sample": "Scan an inactive batch.",
+        "message": "New Batch No is not active.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "New Batch No is not active.",
+        "note": ""
+      },
+      {
+        "field": "Batch used flag",
+        "validation": "New batch number must not already be used.",
+        "sample": "Scan a used batch.",
+        "message": "New Batch No already used.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "New Batch No already used.",
+        "note": ""
+      },
+      {
+        "field": "Batch uniqueness",
+        "validation": "New batch number must not already exist in Member Master.",
+        "sample": "Scan an existing member batch.",
+        "message": "New Batch No Already Exist.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "New Batch No Already Exist.",
+        "note": ""
+      },
+      {
+        "field": "Concurrent batch use",
+        "validation": "Batch reservation must succeed before saving.",
+        "sample": "Two requests try to consume the same batch.",
+        "message": "New Batch No already used.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "TryMarkNewBatchNumberUsed",
+        "note": ""
+      },
+      {
+        "field": "Existing QR input",
+        "validation": "Existing-with-QR mode requires a QR value.",
+        "sample": "Choose existing-with-QR mode and leave QR blank.",
+        "message": "Please scan or enter QR Code.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Please scan or enter QR Code.",
+        "note": ""
+      },
+      {
+        "field": "Show existing details",
+        "validation": "Existing QR details must be loaded using Show before saving.",
+        "sample": "Scan an existing QR but do not press Show.",
+        "message": "Please press Show after scanning QR Code.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-master.js",
+        "needle": "Please press Show after scanning QR Code.",
+        "note": ""
+      },
+      {
+        "field": "Existing QR mapping",
+        "validation": "Scanned QR must resolve to an original RFID.",
+        "sample": "Scan an unmapped QR in existing mode.",
+        "message": "Existing RFID not found for scanned QR.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Existing RFID not found for scanned QR.",
+        "note": ""
+      },
+      {
+        "field": "Existing member",
+        "validation": "Original RFID must exist in Member Master.",
+        "sample": "Use a mapped QR whose member record is missing.",
+        "message": "Existing Batch No not found in Member Master.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Existing Batch No not found in Member Master.",
+        "note": ""
+      },
+      {
+        "field": "Existing tagging details",
+        "validation": "Existing member tagging details must be available for batch mapping.",
+        "sample": "Map a member without tagging details.",
+        "message": "Member tagging details not found.",
+        "layer": "Server",
+        "file": "Controllers/MemberMasterController.cs",
+        "needle": "Member tagging details not found.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Member Tagging",
+    "code": "MT",
+    "scope": "Member plate lookup and QR sticker tagging",
+    "note": "Member Tagging exists as a controller/view even though it is not a card on the current main menu.",
+    "rows": [
+      {
+        "field": "Member Plate",
+        "validation": "Scan or enter Member Plate.",
+        "sample": "Leave Member Plate blank.",
+        "message": "Please scan or enter Member Plate.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberTaggingController.cs",
+        "needle": "Please scan or enter Member Plate.",
+        "note": ""
+      },
+      {
+        "field": "Manufactured member",
+        "validation": "Plate must identify a manufactured member.",
+        "sample": "Scan a plate missing from manufactured members.",
+        "message": "Member Not Manufactured",
+        "layer": "Server",
+        "file": "Controllers/MemberTaggingController.cs",
+        "needle": "Member Not Manufactured",
+        "note": ""
+      },
+      {
+        "field": "QR Sticker",
+        "validation": "Scan or enter QR Sticker.",
+        "sample": "Leave sticker blank.",
+        "message": "Please scan or enter QR Sticker.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberTaggingController.cs",
+        "needle": "Please scan or enter QR Sticker.",
+        "note": ""
+      },
+      {
+        "field": "Member lookup before sticker",
+        "validation": "Load a MemberCode before adding stickers.",
+        "sample": "Try adding a sticker before loading a plate.",
+        "message": "Please scan member plate and get MemberCode.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-tagging.js",
+        "needle": "Please scan member plate and get MemberCode.",
+        "note": ""
+      },
+      {
+        "field": "Sticker duplicate in list",
+        "validation": "Same sticker cannot be added twice, ignoring case.",
+        "sample": "Add QR001, then qr001.",
+        "message": "Sticker already added in list.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-tagging.js",
+        "needle": "Sticker already added in list.",
+        "note": ""
+      },
+      {
+        "field": "Existing sticker",
+        "validation": "Sticker must not already exist in member tagging.",
+        "sample": "Scan an already registered sticker.",
+        "message": "Member Already Exist.",
+        "layer": "Server",
+        "file": "Controllers/MemberTaggingController.cs",
+        "needle": "Member Already Exist.",
+        "note": ""
+      },
+      {
+        "field": "Sticker list",
+        "validation": "At least one QR Sticker is required for save.",
+        "sample": "Load plate but save without stickers.",
+        "message": "Please add at least one QR Sticker.",
+        "layer": "Browser + server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Please add at least one QR Sticker.",
+        "note": ""
+      },
+      {
+        "field": "Save member identification",
+        "validation": "Save requires a MemberCode.",
+        "sample": "Submit tagging without MemberCode.",
+        "message": "Please scan member plate and get MemberCode.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Please scan member plate and get MemberCode.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Internal Transfer",
+    "code": "IT",
+    "scope": "Member scan, locations and dispatch details",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member scan",
+        "validation": "Scan a member before validation.",
+        "sample": "Leave scan blank.",
+        "message": "Please scan member.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Current location",
+        "validation": "Current location must be supplied for member validation.",
+        "sample": "Validate with no current location.",
+        "message": "Please select location.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please select location.",
+        "note": ""
+      },
+      {
+        "field": "Member mapping",
+        "validation": "Member must be found and tagged.",
+        "sample": "Scan an unknown sticker.",
+        "message": "Member Not Tag / Member Not Found",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public InternalTransfer.MemberValidationResult ValidateInternalTransferMember",
+        "note": ""
+      },
+      {
+        "field": "Member status",
+        "validation": "Member must pass the Manufacture / Received status validation procedure.",
+        "sample": "Scan a member in an ineligible status.",
+        "message": "Member status should be Manufacture or Received.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member status should be Manufacture or Received.",
+        "note": "Current location is passed to the database procedure; its SQL definition is not present locally."
+      },
+      {
+        "field": "Transfer locations",
+        "validation": "From/To locations and both location types are required.",
+        "sample": "Submit with To Location blank.",
+        "message": "Please select transfer locations.",
+        "layer": "Server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please select transfer locations.",
+        "note": ""
+      },
+      {
+        "field": "Different locations",
+        "validation": "From and To cannot be the same location and type.",
+        "sample": "Choose Factory A as both From and To.",
+        "message": "From and To location cannot be same.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "From and To location cannot be same.",
+        "note": ""
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Do not add a member already in the scan list.",
+        "sample": "Scan the same member twice.",
+        "message": "Member already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-internal-transfer.js",
+        "needle": "Member already added.",
+        "note": ""
+      },
+      {
+        "field": "Member selection",
+        "validation": "At least one member must be selected.",
+        "sample": "Continue or save with no members.",
+        "message": "Please select member.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please select member.",
+        "note": ""
+      },
+      {
+        "field": "Truck selection",
+        "validation": "Select a truck in Transport Master mode.",
+        "sample": "Leave Truck List unselected in Master mode.",
+        "message": "Please select Truck.",
+        "layer": "Browser",
+        "file": "Scripts/apts-internal-transfer-dispatch.js",
+        "needle": "Please select Truck.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number",
+        "validation": "Truck Number is required.",
+        "sample": "Leave Truck Number blank.",
+        "message": "Please enter Truck Number.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please enter Truck Number.",
+        "note": ""
+      },
+      {
+        "field": "Driver Name",
+        "validation": "Driver Name is required.",
+        "sample": "Leave Driver Name blank.",
+        "message": "Please enter Driver Name.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please enter Driver Name.",
+        "note": ""
+      },
+      {
+        "field": "Driver Contact No.",
+        "validation": "Driver Contact No. is required.",
+        "sample": "Leave Driver Contact No. blank.",
+        "message": "Please enter Driver Contact No.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please enter Driver Contact No.",
+        "note": ""
+      },
+      {
+        "field": "Transporter Name",
+        "validation": "Transporter Name is required.",
+        "sample": "Leave Transporter Name blank.",
+        "message": "Please enter Transporter Name.",
+        "layer": "Browser + server",
+        "file": "Controllers/InternalTransferController.cs",
+        "needle": "Please enter Transporter Name.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Truck Number.",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/InternalTransfer/MemberDispatch.cshtml",
+        "needle": "id=\"TruckNumber\"",
+        "note": "No explicit vehicle registration format validation was found."
+      },
+      {
+        "field": "Driver Contact No. length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Driver Contact No..",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/InternalTransfer/MemberDispatch.cshtml",
+        "needle": "id=\"DriverContactNo\"",
+        "note": "No exact-10-digit or digits-only check was found in this module."
+      }
+    ]
+  },
+  {
+    "name": "Member Receipt",
+    "code": "MR",
+    "scope": "Receipt location, scans, discrepancy and receipt save",
+    "note": "",
+    "rows": [
+      {
+        "field": "Receipt location",
+        "validation": "Select a receipt location before proceeding.",
+        "sample": "Continue with location blank.",
+        "message": "Please select Location.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-receipt.js",
+        "needle": "Please select Location.",
+        "note": ""
+      },
+      {
+        "field": "Receipt location on save",
+        "validation": "Save requires the receipt location.",
+        "sample": "Submit with no receipt location.",
+        "message": "Please select receipt location.",
+        "layer": "Server",
+        "file": "Controllers/MemberReceiptController.cs",
+        "needle": "Please select receipt location.",
+        "note": ""
+      },
+      {
+        "field": "Member scan",
+        "validation": "Scan a member before validation.",
+        "sample": "Leave scan blank.",
+        "message": "Please scan member.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberReceiptController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Tagged member",
+        "validation": "Member must exist and have a mapped tag.",
+        "sample": "Scan an unknown QR sticker.",
+        "message": "Member Not Tag / Member Not Found",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public MemberReceipt.ReceiveValidationResult ValidateMemberReceiptMember",
+        "note": ""
+      },
+      {
+        "field": "Receipt status",
+        "validation": "Member must have eligible receive data/status.",
+        "sample": "Scan a member without eligible receipt data.",
+        "message": "Member Status Not Match",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member Status Not Match",
+        "note": ""
+      },
+      {
+        "field": "Location match",
+        "validation": "Member receive data must match the selected receipt location.",
+        "sample": "Select Location A for members destined for Location B.",
+        "message": "Member Location Not Match",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public MemberReceipt.ReceiveValidationResult ValidateMemberReceiptMember",
+        "note": ""
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Repeated scans do not add duplicate RFID rows.",
+        "sample": "Scan the same member twice.",
+        "message": "Existing row retained; duplicate row is not added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-receipt.js",
+        "needle": "if (!alreadyAdded)",
+        "note": ""
+      },
+      {
+        "field": "Discrepancy member",
+        "validation": "Select discrepancy members before opening discrepancy entry.",
+        "sample": "Open discrepancy entry without selecting members.",
+        "message": "Please select discrepancy member.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-receipt.js",
+        "needle": "Please select discrepancy member.",
+        "note": ""
+      },
+      {
+        "field": "Discrepancy action",
+        "validation": "Select Loss or Damage before applying discrepancy details.",
+        "sample": "Apply discrepancy without choosing an action.",
+        "message": "Please select discrepancy action.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-receipt.js",
+        "needle": "Please select discrepancy action.",
+        "note": ""
+      },
+      {
+        "field": "Members to receive",
+        "validation": "At least one checked member is required for save.",
+        "sample": "Submit with no checked members.",
+        "message": "Please select member.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberReceiptController.cs",
+        "needle": "Please select member.",
+        "note": ""
+      },
+      {
+        "field": "Dispatch reference",
+        "validation": "Receipt members must provide at least one dispatch code.",
+        "sample": "Submit members without dispatch references.",
+        "message": "Dispatch code not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Dispatch code not found.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Pallet Order",
+    "code": "PO",
+    "scope": "SKU matching, order line selection and order submit",
+    "note": "No explicit positive quantity or numeric dimension validation was found on the active order entry/save path.",
+    "rows": [
+      {
+        "field": "SKU matching inputs",
+        "validation": "Shape, width and length must be supplied for SKU search.",
+        "sample": "Search with width blank.",
+        "message": "Enter pallet shape, width and length.",
+        "layer": "Server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "Enter pallet shape, width and length.",
+        "note": ""
+      },
+      {
+        "field": "Matching SKU",
+        "validation": "Search needs a matching SKU to select a line.",
+        "sample": "Search dimensions with no matching SKU.",
+        "message": "No matching SKU found for the selected details.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-order.js",
+        "needle": "No matching SKU found for the selected details.",
+        "note": ""
+      },
+      {
+        "field": "SKU selection",
+        "validation": "Select at least one SKU before adding order lines.",
+        "sample": "Click Add without checking a SKU.",
+        "message": "Please select at least one SKU.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-order.js",
+        "needle": "Please select at least one SKU.",
+        "note": ""
+      },
+      {
+        "field": "Order line list",
+        "validation": "At least one line item is required for submit.",
+        "sample": "Submit an empty order.",
+        "message": "Please add at least one line item.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "Please add at least one line item.",
+        "note": ""
+      },
+      {
+        "field": "Line SKU code",
+        "validation": "Rows with empty SKU codes are excluded when building save lines.",
+        "sample": "Post only line rows with blank SKU codes.",
+        "message": "Please add at least one line item.",
+        "layer": "Server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "if (string.IsNullOrWhiteSpace(skuCodes[i]))",
+        "note": ""
+      },
+      {
+        "field": "Session location",
+        "validation": "Session must contain LocationCode.",
+        "sample": "Submit after LocationCode is missing.",
+        "message": "Location is not found in session.",
+        "layer": "Server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "Location is not found in session.",
+        "note": ""
+      },
+      {
+        "field": "Session customer",
+        "validation": "Session must contain CustomerCode.",
+        "sample": "Submit after CustomerCode is missing.",
+        "message": "Customer is not found in session.",
+        "layer": "Server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "Customer is not found in session.",
+        "note": ""
+      },
+      {
+        "field": "Saved order details",
+        "validation": "Saved order must contain at least one successful detail record.",
+        "sample": "Save returns an order code but zero saved detail lines.",
+        "message": "Unable to submit pallet order details.",
+        "layer": "Server",
+        "file": "Controllers/PalletOrderController.cs",
+        "needle": "Unable to submit pallet order details.",
+        "note": ""
+      },
+      {
+        "field": "Instructions length",
+        "validation": "Instruction input allows a maximum of 100 characters.",
+        "sample": "Type 101 characters in Instruction.",
+        "message": "Input is limited to 100 characters.",
+        "layer": "Browser",
+        "file": "Views/PalletOrder/PalletOrder.cshtml",
+        "needle": "maxlength=\"100\"",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Pallet Assemble",
+    "code": "PA",
+    "scope": "Pallet order, member eligibility, sizes, quantities and bypass",
+    "note": "",
+    "rows": [
+      {
+        "field": "Order selection before scan",
+        "validation": "Select a pallet order before adding members.",
+        "sample": "Scan without an order selected.",
+        "message": "Please select a pallet order before adding members.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "Please select a pallet order before adding members.",
+        "note": ""
+      },
+      {
+        "field": "Member scan",
+        "validation": "Member QR must be entered or scanned.",
+        "sample": "Leave member QR blank.",
+        "message": "Please scan or enter a member QR code.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletAssembleController.cs",
+        "needle": "Please scan or enter a member QR code.",
+        "note": ""
+      },
+      {
+        "field": "Tag mapping",
+        "validation": "Member must exist and tag must be mapped.",
+        "sample": "Scan an unmapped sticker.",
+        "message": "Member not found or tag is not mapped.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member not found or tag is not mapped.",
+        "note": ""
+      },
+      {
+        "field": "Eligible current member",
+        "validation": "Member must be returned by current-member eligibility lookup.",
+        "sample": "Scan a member without eligible current-member data.",
+        "message": "Member status not valid.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Message = \"Member status not valid.\"",
+        "note": "Do not infer an exact allowed-status list from the browser fallback message."
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "A member already in the scanned list cannot be added again.",
+        "sample": "Scan the same RFID twice.",
+        "message": "This member is already added in the scanned members list.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "This member is already added in the scanned members list.",
+        "note": ""
+      },
+      {
+        "field": "Allowed member size",
+        "validation": "Member size must match one of the selected order sizes.",
+        "sample": "Order needs size 1200; scan size 1500.",
+        "message": "Member size [size] does not match this order. Allowed sizes: [sizes].",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "does not match this order. Allowed sizes:",
+        "note": ""
+      },
+      {
+        "field": "Quantity by size",
+        "validation": "Do not exceed the required quantity for CM, LM1 or LM2 size allocation.",
+        "sample": "Required CM quantity is complete; scan another CM.",
+        "message": "[type] size [size] required quantity is already complete.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "required quantity is already complete.",
+        "note": ""
+      },
+      {
+        "field": "Total quantity cap",
+        "validation": "Do not add more members once order total quantity is complete.",
+        "sample": "Order needs 5 members; attempt a sixth.",
+        "message": "Required member quantity is already complete for this pallet order.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "Required member quantity is already complete for this pallet order.",
+        "note": ""
+      },
+      {
+        "field": "Order selection before save",
+        "validation": "Select a pallet order before submitting assembly.",
+        "sample": "Submit without a selected order.",
+        "message": "Please select a pallet order before submit.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "Please select a pallet order before submit.",
+        "note": ""
+      },
+      {
+        "field": "Nonempty scan list",
+        "validation": "At least one scanned member is required.",
+        "sample": "Submit without scanning any member.",
+        "message": "Please scan at least one member.",
+        "layer": "Browser + server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Please scan at least one member.",
+        "note": ""
+      },
+      {
+        "field": "Complete order quantity",
+        "validation": "When TotalMemQty is positive, scan count must equal that total.",
+        "sample": "Order needs 5 members; submit with 4.",
+        "message": "Please scan all required members before submit.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "Please scan all required members before submit.",
+        "note": ""
+      },
+      {
+        "field": "Recent existing assembly",
+        "validation": "Member already in Pallet Assemble within the 3-day window is rejected.",
+        "sample": "Scan a recently assembled member at the same location.",
+        "message": "Member already in Pallet Assemble status.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member already in Pallet Assemble status.",
+        "note": ""
+      },
+      {
+        "field": "Recent assembly and location",
+        "validation": "Recent Pallet Assemble member with location mismatch cannot bypass.",
+        "sample": "Recently assembled member has a different last location.",
+        "message": "Pallet created within 3 days. Location mismatch bypass is not allowed.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet created within 3 days. Location mismatch bypass is not allowed.",
+        "note": ""
+      },
+      {
+        "field": "Recent pallet reuse",
+        "validation": "Other-status member in the 3-day created-pallet window is rejected.",
+        "sample": "Scan a recently used member now in another status.",
+        "message": "Pallet already created within 3 days",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet already created within 3 days",
+        "note": ""
+      },
+      {
+        "field": "Location bypass",
+        "validation": "Eligible location mismatch opens a confirmation before updating last location.",
+        "sample": "Scan an eligible member last located elsewhere.",
+        "message": "Member location ([last]) does not match selected location ([current]). Do you want to update the member's last location and continue?",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-assemble.js",
+        "needle": "does not match selected location",
+        "note": "Confirmed bypass marks a violation and updates member location/state."
+      },
+      {
+        "field": "Bypass 3-day check",
+        "validation": "Bypass rechecks the 3-day window before updating the member.",
+        "sample": "Continue bypass for a member within the restricted window.",
+        "message": "Pallet created within 3 days. Pallet Assemble is not allowed.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet created within 3 days. Pallet Assemble is not allowed.",
+        "note": ""
+      },
+      {
+        "field": "Client location on save",
+        "validation": "Assembly save requires ClientLocation.",
+        "sample": "Post assembly without ClientLocation.",
+        "message": "Client location is required.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Client location is required.",
+        "note": ""
+      },
+      {
+        "field": "Order detail on save",
+        "validation": "Assembly save requires PalletOrderdtlCode.",
+        "sample": "Post assembly without order detail code.",
+        "message": "Pallet order details are required.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet order details are required.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Pallet Diss Client",
+    "code": "PDC",
+    "scope": "Client pallet disassembly",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member scan",
+        "validation": "Member scan is required.",
+        "sample": "Validate with a blank member.",
+        "message": "Please scan member.",
+        "layer": "Server",
+        "file": "Controllers/PalletDisassembleClientController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Member status",
+        "validation": "Scanned member must be in Pallet Assemble status.",
+        "sample": "Scan a member in another status.",
+        "message": "Member status should be Pallet Assemble.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member status should be Pallet Assemble.",
+        "note": ""
+      },
+      {
+        "field": "Pallet details",
+        "validation": "Pallet details must be available for the scanned member.",
+        "sample": "Scan an assembled member without pallet detail data.",
+        "message": "Pallet details not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet details not found.",
+        "note": ""
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Member already loaded cannot be added twice.",
+        "sample": "Scan the same member again.",
+        "message": "Member [RFID] already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-client.js",
+        "needle": "already added.",
+        "note": ""
+      },
+      {
+        "field": "Loaded member details",
+        "validation": "Scan must return pallet member details.",
+        "sample": "Validation returns no pallet members.",
+        "message": "Pallet member details not found.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-client.js",
+        "needle": "Pallet member details not found.",
+        "note": ""
+      },
+      {
+        "field": "Member selection",
+        "validation": "Select at least one member to disassemble.",
+        "sample": "Submit with no selected members.",
+        "message": "Please select member.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDisassembleClientController.cs",
+        "needle": "Please select member.",
+        "note": ""
+      },
+      {
+        "field": "Pallet reference",
+        "validation": "At least one selected member must have a pallet code.",
+        "sample": "Submit members without pallet references.",
+        "message": "Pallet code not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet code not found.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Pre-Dispatch Details",
+    "code": "PD",
+    "scope": "Member validation, 3-day eligibility and pre-dispatch entry",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member scan",
+        "validation": "Member scan is required before validation.",
+        "sample": "Validate with a blank scan.",
+        "message": "Please scan member.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Assemble status",
+        "validation": "Member must be available at Pallet Assemble.",
+        "sample": "Scan a member in another status.",
+        "message": "Member is not available at Pallet Assemble.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member is not available at Pallet Assemble.",
+        "note": ""
+      },
+      {
+        "field": "Assembly date lookup",
+        "validation": "Assembly-date validation data must be available.",
+        "sample": "Scan a member with no date-validation record.",
+        "message": "Member assemble date validation not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member assemble date validation not found.",
+        "note": ""
+      },
+      {
+        "field": "3-day window",
+        "validation": "Date-validation procedure must return ALLOWED.",
+        "sample": "Scan a member assembled more than 3 days ago.",
+        "message": "Member assembled more than 3 days ago. Pre-Dispatch not allowed.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member assembled more than 3 days ago. Pre-Dispatch not allowed.",
+        "note": "Exact boundary is delegated to the database procedure."
+      },
+      {
+        "field": "Validated pallet",
+        "validation": "A validated PalletCode is required on save.",
+        "sample": "Submit without validating a member.",
+        "message": "Please validate member first.",
+        "layer": "Server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Please validate member first.",
+        "note": ""
+      },
+      {
+        "field": "Client Batch No",
+        "validation": "Client Batch No is required on save.",
+        "sample": "Leave Client Batch No blank.",
+        "message": "Please enter Client Batch No.",
+        "layer": "Server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Please enter Client Batch No.",
+        "note": ""
+      },
+      {
+        "field": "Storage Location",
+        "validation": "Storage Location is required.",
+        "sample": "Leave Storage Location blank.",
+        "message": "Please enter Storage Location.",
+        "layer": "Server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Please enter Storage Location.",
+        "note": ""
+      },
+      {
+        "field": "Existing-entry lookup key",
+        "validation": "PalletCode or ClientBatchNo is required for duplicate lookup.",
+        "sample": "Check an existing entry with both keys blank.",
+        "message": "Pallet Code or Client Batch No is required.",
+        "layer": "Server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Pallet Code or Client Batch No is required.",
+        "note": ""
+      },
+      {
+        "field": "Existing pre-dispatch",
+        "validation": "Existing pre-dispatch is identified by pallet or client batch.",
+        "sample": "Check a pallet/batch already in pre-dispatch.",
+        "message": "Pallet Pre-Dispatch already exists.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletPreDispatchController.cs",
+        "needle": "Pallet Pre-Dispatch already exists.",
+        "note": "The browser identifies an existing entry; this is not a claim of a unique database constraint."
+      },
+      {
+        "field": "Numeric inputs",
+        "validation": "Weight and Thickness inputs have minimum 0 and step 0.01.",
+        "sample": "Enter Weight -1 or Thickness -0.5.",
+        "message": "Browser numeric input constraint.",
+        "layer": "Browser",
+        "file": "Views/PalletPreDispatch/PalletPreDispatch.cshtml",
+        "needle": "id=\"Weight\"",
+        "note": "The save controller defaults blank numeric fields to 0 and has no explicit negative-value check."
+      }
+    ]
+  },
+  {
+    "name": "Pallet Dispatch",
+    "code": "PDS",
+    "scope": "Member / batch scans, customer and consignee selection",
+    "note": "Truck and driver fields have no explicit required check in the current dispatch view/controller.",
+    "rows": [
+      {
+        "field": "To Customer",
+        "validation": "Select the receiving customer.",
+        "sample": "Continue with To Customer blank.",
+        "message": "Please select To Customer.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Please select To Customer.",
+        "note": ""
+      },
+      {
+        "field": "Consignee",
+        "validation": "Select Consignee.",
+        "sample": "Continue with Consignee blank.",
+        "message": "Please select Consignee.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Please select Consignee.",
+        "note": ""
+      },
+      {
+        "field": "Scan input",
+        "validation": "Member scan cannot be blank.",
+        "sample": "Validate with a blank scan.",
+        "message": "Members Not in PreDispatch.",
+        "layer": "Server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Members Not in PreDispatch.",
+        "note": ""
+      },
+      {
+        "field": "Pre-dispatch member eligibility",
+        "validation": "Member must pass dispatch validation for pre-dispatch.",
+        "sample": "Scan a member not eligible for dispatch.",
+        "message": "Members Not in PreDispatch.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public PalletDispatcch.DispatchValidationResult ValidateDispatchMember",
+        "note": "Validation result is returned by the database procedure."
+      },
+      {
+        "field": "Client batch input",
+        "validation": "Client Batch No must be supplied in batch scan mode.",
+        "sample": "Add an empty client batch.",
+        "message": "Enter Client Batch No.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-dispatch.js",
+        "needle": "Enter Client Batch No.",
+        "note": ""
+      },
+      {
+        "field": "Batch lookup",
+        "validation": "Batch list must resolve to available dispatch batches.",
+        "sample": "Lookup a batch with no pre-dispatch details.",
+        "message": "Some Members are not In PreDispatch.",
+        "layer": "Server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Some Members are not In PreDispatch.",
+        "note": ""
+      },
+      {
+        "field": "Duplicate scan",
+        "validation": "Do not add an already loaded dispatch item again.",
+        "sample": "Add the same member/batch twice.",
+        "message": "Already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-dispatch.js",
+        "needle": "Already added.",
+        "note": ""
+      },
+      {
+        "field": "Dispatch item identifiers",
+        "validation": "Save needs a line with PalletCode and ClientBatchNo, neither blank nor hyphen.",
+        "sample": "Post only rows with missing pallet/batch identifiers.",
+        "message": "Please add dispatch batches.",
+        "layer": "Server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Please add dispatch batches.",
+        "note": ""
+      },
+      {
+        "field": "Previously dispatched members",
+        "validation": "Reject a pallet whose members are already dispatched.",
+        "sample": "Submit a pallet already dispatched.",
+        "message": "Already Dispatch",
+        "layer": "Server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Already Dispatch",
+        "note": ""
+      },
+      {
+        "field": "Session From Location",
+        "validation": "Session must provide the dispatch FromLocation.",
+        "sample": "Save after the session location is lost.",
+        "message": "Session From Location not found. Please login again.",
+        "layer": "Server",
+        "file": "Controllers/PalletDispatchController.cs",
+        "needle": "Session From Location not found. Please login again.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Truck Number.",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/PalletDispatch/PalletDispatchDetails.cshtml",
+        "needle": "id=\"TruckNumber\"",
+        "note": "No explicit vehicle registration format validation was found."
+      },
+      {
+        "field": "Driver Contact No. length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Driver Contact No..",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/PalletDispatch/PalletDispatchDetails.cshtml",
+        "needle": "id=\"DriverContactNo\"",
+        "note": "No exact-10-digit or digits-only check was found in this module."
+      }
+    ]
+  },
+  {
+    "name": "Pallet Diss Customer",
+    "code": "PDCO",
+    "scope": "Pallet Dispatch / Other modes, discrepancy, temporary and final save",
+    "note": "",
+    "rows": [
+      {
+        "field": "To Customer",
+        "validation": "Select a customer before disassembling or final save.",
+        "sample": "Leave To Customer blank.",
+        "message": "Please select To Customer.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDisassembleCustomerController.cs",
+        "needle": "Please select To Customer.",
+        "note": ""
+      },
+      {
+        "field": "Member scan",
+        "validation": "Scan a member before validation.",
+        "sample": "Leave member input blank.",
+        "message": "Please scan member.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDisassembleCustomerController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Tag mapping",
+        "validation": "Member must exist and be tagged.",
+        "sample": "Scan an unknown sticker.",
+        "message": "Member Not Tag / Member Not Found",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public PalletDisassembleCustomer.ValidationResult ValidatePalletDisassembleCustomerMember",
+        "note": ""
+      },
+      {
+        "field": "Pallet Dispatch mode status",
+        "validation": "In Pallet Dispatch mode, member must be in Pallet Dispatch status.",
+        "sample": "Use this mode with an ineligible member.",
+        "message": "Member status should be Pallet Dispatch.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member status should be Pallet Dispatch.",
+        "note": ""
+      },
+      {
+        "field": "Dispatch details",
+        "validation": "Pallet dispatch details must be available.",
+        "sample": "Scan a dispatched member without detail rows.",
+        "message": "Pallet dispatch details not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Pallet dispatch details not found.",
+        "note": ""
+      },
+      {
+        "field": "One active pallet",
+        "validation": "Finish disassembling the loaded pallet before loading a different pallet.",
+        "sample": "Load Pallet A, then scan a member from Pallet B.",
+        "message": "Pallet [code] is already loaded. Please disassemble this pallet before scanning members from another pallet.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-customer.js",
+        "needle": "is already loaded. Please disassemble",
+        "note": ""
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Do not add an already loaded member again.",
+        "sample": "Scan the same member twice.",
+        "message": "Member [RFID] already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-customer.js",
+        "needle": "already added.",
+        "note": ""
+      },
+      {
+        "field": "Other mode already disassembled",
+        "validation": "Other mode rejects members already in Pallet Disassemble from Customer.",
+        "sample": "Use Other mode on an already disassembled member.",
+        "message": "Member is in Pallet Disassemble from Customer",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member is in Pallet Disassemble from Customer",
+        "note": ""
+      },
+      {
+        "field": "Other mode dispatched member",
+        "validation": "A Pallet Dispatch member must be added using Pallet Dispatch mode.",
+        "sample": "Use Other mode for a dispatched member.",
+        "message": "Member in Pallet Dispatch, Please select the pallet dispatch option to add the member",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member in Pallet Dispatch, Please select the pallet dispatch option to add the member",
+        "note": ""
+      },
+      {
+        "field": "Other mode manufactured member",
+        "validation": "Other mode needs a manufactured member with type and size data.",
+        "sample": "Use Other mode with a missing manufactured record.",
+        "message": "Member not manufactured",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member not manufactured",
+        "note": ""
+      },
+      {
+        "field": "Discrepancy member",
+        "validation": "Select a discrepancy member before entering discrepancy details.",
+        "sample": "Open discrepancy entry with nothing checked.",
+        "message": "Please select discrepancy member.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-customer.js",
+        "needle": "Please select discrepancy member.",
+        "note": ""
+      },
+      {
+        "field": "Discrepancy action",
+        "validation": "Select an action before applying discrepancy.",
+        "sample": "Apply with neither Loss nor Damage selected.",
+        "message": "Please select discrepancy action.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-customer.js",
+        "needle": "Please select discrepancy action.",
+        "note": ""
+      },
+      {
+        "field": "Discrepancy completeness",
+        "validation": "Checked discrepancy members require Loss or Damage before disassembly.",
+        "sample": "Disassemble while a checked discrepancy has no action.",
+        "message": "Please select Loss or Damage for checked discrepancy member.",
+        "layer": "Browser",
+        "file": "Scripts/apts-pallet-disassemble-customer.js",
+        "needle": "Please select Loss or Damage for checked discrepancy member.",
+        "note": ""
+      },
+      {
+        "field": "Member selection",
+        "validation": "At least one member is required for temporary disassembly save.",
+        "sample": "Submit disassembly without members.",
+        "message": "Please select member.",
+        "layer": "Server",
+        "file": "Controllers/PalletDisassembleCustomerController.cs",
+        "needle": "Please select member.",
+        "note": ""
+      },
+      {
+        "field": "Temporary records before final save",
+        "validation": "At least one temporary disassembly code is required for final save.",
+        "sample": "Click final save before disassembling a pallet.",
+        "message": "Please disassemble pallet first.",
+        "layer": "Browser + server",
+        "file": "Controllers/PalletDisassembleCustomerController.cs",
+        "needle": "Please disassemble pallet first.",
+        "note": ""
+      },
+      {
+        "field": "Detail lookup code",
+        "validation": "A disassemble code is required to load saved temporary details.",
+        "sample": "Request details with blank disassemble code.",
+        "message": "Disassemble code not found.",
+        "layer": "Server",
+        "file": "Controllers/PalletDisassembleCustomerController.cs",
+        "needle": "Disassemble code not found.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Member Collection",
+    "code": "MC",
+    "scope": "Customer member collection and transport details",
+    "note": "",
+    "rows": [
+      {
+        "field": "Disassemble From",
+        "validation": "Select the customer from whom members are collected.",
+        "sample": "Leave customer blank.",
+        "message": "Please select Disassemble from.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please select Disassemble from.",
+        "note": ""
+      },
+      {
+        "field": "Member scan",
+        "validation": "Scan or enter a member.",
+        "sample": "Leave scan blank.",
+        "message": "Please scan or enter a member.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please scan or enter a member.",
+        "note": ""
+      },
+      {
+        "field": "Tagged member",
+        "validation": "Member must exist and be tagged.",
+        "sample": "Scan an unknown sticker.",
+        "message": "Member Not Tag / Member Not Found",
+        "layer": "Server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Member Not Tag / Member Not Found",
+        "note": ""
+      },
+      {
+        "field": "Member status",
+        "validation": "Only eligible customer-disassembled or customer-disassembled-damage member data can be added.",
+        "sample": "Scan a member in Pallet Dispatch status.",
+        "message": "Member status must be Pallet Disassemble from Customer or Pallet Disassemble from Customer-Damage.",
+        "layer": "Server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Member status must be Pallet Disassemble from Customer or Pallet Disassemble from Customer-Damage.",
+        "note": ""
+      },
+      {
+        "field": "Customer matching",
+        "validation": "Returned nonblank member customer codes must match the selected customer.",
+        "sample": "Select Customer A, scan a member of Customer B.",
+        "message": "Member does not belong to the selected customer.",
+        "layer": "Server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Member does not belong to the selected customer.",
+        "note": "Blank returned customer codes are not rejected by this comparison."
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Repeated member cannot be added again.",
+        "sample": "Scan the same member twice.",
+        "message": "Member already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-collection.js",
+        "needle": "Member already added.",
+        "note": ""
+      },
+      {
+        "field": "Nonempty member list",
+        "validation": "At least one valid RFID member is needed to proceed and save.",
+        "sample": "Submit with an empty member list.",
+        "message": "Please add at least one member.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please add at least one member.",
+        "note": ""
+      },
+      {
+        "field": "Truck selection",
+        "validation": "Select a truck in Transport Master mode.",
+        "sample": "Choose Master mode but no truck.",
+        "message": "Please select Truck.",
+        "layer": "Browser",
+        "file": "Scripts/apts-member-collection-details.js",
+        "needle": "Please select Truck.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number",
+        "validation": "Truck Number is required.",
+        "sample": "Leave Truck Number blank.",
+        "message": "Please enter Truck Number.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please enter Truck Number.",
+        "note": ""
+      },
+      {
+        "field": "Driver Name",
+        "validation": "Driver Name is required.",
+        "sample": "Leave Driver Name blank.",
+        "message": "Please enter Driver Name.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please enter Driver Name.",
+        "note": ""
+      },
+      {
+        "field": "Driver Contact No.",
+        "validation": "Driver Contact No. is required.",
+        "sample": "Leave Driver Contact No. blank.",
+        "message": "Please enter Driver Contact No.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please enter Driver Contact No.",
+        "note": ""
+      },
+      {
+        "field": "Transporter Name",
+        "validation": "Transporter Name is required.",
+        "sample": "Leave Transporter Name blank.",
+        "message": "Please enter Transporter Name.",
+        "layer": "Browser + server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "Please enter Transporter Name.",
+        "note": ""
+      },
+      {
+        "field": "RFID cleanup",
+        "validation": "Blank RFID rows are removed; duplicate RFID rows are collapsed ignoring case.",
+        "sample": "Post RFID A twice and a blank RFID row.",
+        "message": "Only one valid A row remains.",
+        "layer": "Server",
+        "file": "Controllers/MemberCollectionController.cs",
+        "needle": "private static List<MemberCollection.CollectionMemberItem> CleanMembers",
+        "note": ""
+      },
+      {
+        "field": "Customer dismantle code",
+        "validation": "At least one customer dismantle reference is required to save collection.",
+        "sample": "Post members with all customer dismantle codes blank.",
+        "message": "Customer dismantle code not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Customer dismantle code not found.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Truck Number.",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/MemberCollection/MemberCollectionDetails.cshtml",
+        "needle": "id=\"CollectionTruckNo\"",
+        "note": "No explicit vehicle registration format validation was found."
+      },
+      {
+        "field": "Driver Contact No. length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Driver Contact No..",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/MemberCollection/MemberCollectionDetails.cshtml",
+        "needle": "id=\"DriverContactNo\"",
+        "note": "No exact-10-digit or digits-only check was found in this module."
+      }
+    ]
+  },
+  {
+    "name": "Collection Internal Transfer",
+    "code": "CIT",
+    "scope": "Collection truck, bulk member scans, bypass and dispatch",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member scan",
+        "validation": "Member scan is required.",
+        "sample": "Leave member input blank.",
+        "message": "Please scan member.",
+        "layer": "Browser + server",
+        "file": "Controllers/CollectionInternalTransferController.cs",
+        "needle": "Please scan member.",
+        "note": ""
+      },
+      {
+        "field": "Truck before scan",
+        "validation": "Select a master truck or enter a truck in Other mode.",
+        "sample": "Scan without selecting or entering a truck.",
+        "message": "Please select truck. / Please enter Truck Number.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer.js",
+        "needle": "Please select truck.",
+        "note": ""
+      },
+      {
+        "field": "To Location",
+        "validation": "Select To Location before proceeding.",
+        "sample": "Continue with To Location blank.",
+        "message": "Please select To location.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer.js",
+        "needle": "Please select To location.",
+        "note": ""
+      },
+      {
+        "field": "Member mapping",
+        "validation": "Scanned member must resolve to a tagged member.",
+        "sample": "Scan an unknown QR.",
+        "message": "Member Not Tag / Member Not Found",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public InternalTransfer.CollectionBulkValidationResult ValidateCollectionInternalTransferMember",
+        "note": ""
+      },
+      {
+        "field": "Already transferred status",
+        "validation": "Member already in Internal Transfer or Internal Transfer-Damage is rejected without bypass.",
+        "sample": "Scan an already internally transferred member.",
+        "message": "Member Already In Internal Transfer",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member Already In Internal Transfer",
+        "note": ""
+      },
+      {
+        "field": "Collection status bypass",
+        "validation": "Ineligible Member Collection status prompts for confirmation to continue.",
+        "sample": "Scan a known member outside Member Collection status.",
+        "message": "Member is not in Member Collection status. Do you want to continue?",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Member is not in Member Collection status.",
+        "note": "Confirmed bypass creates a violation mark."
+      },
+      {
+        "field": "Collection truck match",
+        "validation": "For eligible collection members, collected truck must match selected truck code or number.",
+        "sample": "Member was collected in Truck A; select Truck B.",
+        "message": "Truck Mismatch, Member Were Collected in different Truck. Please Select The Correct Truck",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "Truck Mismatch, Member Were Collected in different Truck. Please Select The Correct Truck",
+        "note": ""
+      },
+      {
+        "field": "Duplicate member",
+        "validation": "Do not add a member already in the list.",
+        "sample": "Scan the same RFID twice.",
+        "message": "Member already added.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer.js",
+        "needle": "Member already added.",
+        "note": ""
+      },
+      {
+        "field": "Member selection",
+        "validation": "At least one member is needed to continue and save.",
+        "sample": "Submit with no members.",
+        "message": "Please select member.",
+        "layer": "Browser + server",
+        "file": "Controllers/CollectionInternalTransferController.cs",
+        "needle": "Please select member.",
+        "note": ""
+      },
+      {
+        "field": "Transfer locations",
+        "validation": "From/To location and type values must be supplied.",
+        "sample": "Submit with missing transfer location/type.",
+        "message": "Please select transfer locations.",
+        "layer": "Server",
+        "file": "Controllers/CollectionInternalTransferController.cs",
+        "needle": "Please select transfer locations.",
+        "note": ""
+      },
+      {
+        "field": "Different locations",
+        "validation": "Same From/To location with same type is rejected.",
+        "sample": "Submit identical source and destination.",
+        "message": "From and To location cannot be same.",
+        "layer": "Server",
+        "file": "Controllers/CollectionInternalTransferController.cs",
+        "needle": "From and To location cannot be same.",
+        "note": ""
+      },
+      {
+        "field": "Truck Number",
+        "validation": "Truck Number is required for save.",
+        "sample": "Leave Truck Number blank.",
+        "message": "Truck Number is required.",
+        "layer": "Browser + server",
+        "file": "Controllers/CollectionInternalTransferController.cs",
+        "needle": "Truck Number is required.",
+        "note": ""
+      },
+      {
+        "field": "Driver Name",
+        "validation": "Driver Name is required by the details form.",
+        "sample": "Leave Driver Name blank.",
+        "message": "Driver Name is required.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer-dispatch.js",
+        "needle": "Driver Name is required.",
+        "note": "No matching required-field check in SubmitCollectionInternalTransfer."
+      },
+      {
+        "field": "Driver Contact No.",
+        "validation": "Driver Contact No. is required by the details form.",
+        "sample": "Leave Driver Contact No. blank.",
+        "message": "Driver Contact No. is required.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer-dispatch.js",
+        "needle": "Driver Contact No. is required.",
+        "note": "No matching required-field check in SubmitCollectionInternalTransfer."
+      },
+      {
+        "field": "Transporter Name",
+        "validation": "Transporter Name is required by the details form.",
+        "sample": "Leave Transporter Name blank.",
+        "message": "Transporter Name is required.",
+        "layer": "Browser",
+        "file": "Scripts/apts-collection-internal-transfer-dispatch.js",
+        "needle": "Transporter Name is required.",
+        "note": "No matching required-field check in SubmitCollectionInternalTransfer."
+      },
+      {
+        "field": "Bypass RFID",
+        "validation": "Bypass request requires RFID.",
+        "sample": "Continue bypass with blank RFID.",
+        "message": "Member RFID is required.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "public InternalTransfer.CollectionBulkValidationResult ContinueCollectionInternalTransferBypass",
+        "note": ""
+      },
+      {
+        "field": "Bypass member record",
+        "validation": "Bypass needs an existing member record.",
+        "sample": "Continue bypass for a missing member.",
+        "message": "Member details not found.",
+        "layer": "Server",
+        "file": "DataIntraction/DataAccess.cs",
+        "needle": "LoadCollectionInternalTransferAnyMember",
+        "note": ""
+      },
+      {
+        "field": "Truck Number length",
+        "validation": "Input allows a maximum of 10 characters.",
+        "sample": "Type 11 characters in Truck Number.",
+        "message": "Input is limited to 10 characters.",
+        "layer": "Browser",
+        "file": "Views/CollectionInternalTransfer/CollectionInternalTransfer.cshtml",
+        "needle": "id=\"CollectionManualTruckNo\"",
+        "note": "No explicit vehicle registration format validation was found."
+      }
+    ]
+  },
+  {
+    "name": "Current Stock Report",
+    "code": "CSR",
+    "scope": "Current-stock report filters",
+    "note": "",
+    "rows": [
+      {
+        "field": "Location",
+        "validation": "Select a stock location.",
+        "sample": "Run report with no location.",
+        "message": "Please select location.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetCurrentStockReport",
+        "note": ""
+      },
+      {
+        "field": "Report date",
+        "validation": "A report date must be supplied.",
+        "sample": "Run report with date blank/default.",
+        "message": "Please select date.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "Please select date.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Query Report",
+    "code": "QR",
+    "scope": "Member query lookup",
+    "note": "",
+    "rows": [
+      {
+        "field": "Member RFID",
+        "validation": "Scan or enter member RFID.",
+        "sample": "Run query with empty RFID.",
+        "message": "Please scan or enter member RFID.",
+        "layer": "Server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "Please scan or enter member RFID.",
+        "note": ""
+      },
+      {
+        "field": "Existing member data",
+        "validation": "Lookup must return an item with RFID.",
+        "sample": "Query an unknown member.",
+        "message": "No data found for scanned member.",
+        "layer": "Server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "No data found for scanned member.",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "name": "Discrepancy Report",
+    "code": "DR",
+    "scope": "Discrepancy type and report date range",
+    "note": "",
+    "rows": [
+      {
+        "field": "Discrepancy Type",
+        "validation": "Discrepancy type is required.",
+        "sample": "Run report without discrepancy type.",
+        "message": "Please select discrepancy type.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "Please select discrepancy type.",
+        "note": ""
+      },
+      {
+        "field": "Date range",
+        "validation": "Both From Date and To Date must be supplied.",
+        "sample": "Leave either date blank.",
+        "message": "Please select from date and to date.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetDiscrepancyReport",
+        "note": ""
+      },
+      {
+        "field": "Date sequence",
+        "validation": "From Date cannot be later than To Date.",
+        "sample": "From 21-Oct-2026; To 20-Oct-2026.",
+        "message": "From date cannot be greater than to date.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetDiscrepancyReport",
+        "note": "Same-day From/To dates are permitted."
+      }
+    ]
+  },
+  {
+    "name": "High Age Report",
+    "code": "HAR",
+    "scope": "Location type, location and aging days",
+    "note": "",
+    "rows": [
+      {
+        "field": "Report location type",
+        "validation": "High Age report location type is required.",
+        "sample": "Run report with type blank.",
+        "message": "Please select report location type.",
+        "layer": "Server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "Please select report location type.",
+        "note": ""
+      },
+      {
+        "field": "Location",
+        "validation": "Report location is required.",
+        "sample": "Run report with location blank.",
+        "message": "Please select location.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetHighAgeReport",
+        "note": ""
+      },
+      {
+        "field": "Total days",
+        "validation": "Total Days must parse as an integer and be zero or greater.",
+        "sample": "Enter -1, 1.5 or ABC.",
+        "message": "Please enter valid total days.",
+        "layer": "Server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "Please enter valid total days.",
+        "note": "Browser checks blank/negative values; server performs the full integer validation."
+      }
+    ]
+  },
+  {
+    "name": "Member Transaction Report",
+    "code": "MTR",
+    "scope": "Location and report date range",
+    "note": "",
+    "rows": [
+      {
+        "field": "Location",
+        "validation": "Report location is required.",
+        "sample": "Run report with location blank.",
+        "message": "Please select location.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetMemberTransactionReport",
+        "note": ""
+      },
+      {
+        "field": "Date range",
+        "validation": "Both From Date and To Date must be supplied.",
+        "sample": "Leave either date blank.",
+        "message": "Please select from date and to date.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetMemberTransactionReport",
+        "note": ""
+      },
+      {
+        "field": "Date sequence",
+        "validation": "From Date cannot be later than To Date.",
+        "sample": "From 21-Oct-2026; To 20-Oct-2026.",
+        "message": "From date cannot be greater than to date.",
+        "layer": "Browser + server",
+        "file": "Controllers/ReportController.cs",
+        "needle": "public JsonResult GetMemberTransactionReport",
+        "note": "Same-day From/To dates are permitted."
+      }
+    ]
+  }
+]

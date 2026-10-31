@@ -71,6 +71,8 @@ namespace APTS_WEB_APP.Models
             public string CurrentLocation { get; set; }
 
             public bool LocationMismatch { get; set; }
+
+            public bool RequiresBypass { get; set; }
         }
 
         public class AssembleBypassResult

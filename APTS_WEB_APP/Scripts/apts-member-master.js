@@ -396,10 +396,60 @@
             button.setAttribute("aria-expanded", "false");
         }
     }
+
+    function syncProductionLocationFromOption(option) {
+        var titleInput = bySelector("#ProductionLocationTitle");
+        if (!option) {
+            return;
+        }
+
+        setValue("#ProductionLocation", option.getAttribute("data-value") || "");
+        if (titleInput) {
+            titleInput.value = option.getAttribute("data-location-title") || option.textContent.trim();
+        }
+    }
+
+    function syncProductionLocationTitle() {
+        var currentCode = bySelector("#ProductionLocation");
+        var selectedOption = bySelector("[data-production-location-option][aria-selected='true']");
+        var matchingOption = currentCode ? bySelector("[data-production-location-option][data-value='" + currentCode.value + "']") : null;
+        syncProductionLocationFromOption(selectedOption || matchingOption);
+    }
+
+    function resetProductionLocationSelect(form) {
+        var select = form ? form.querySelector("[data-production-location-select]") : null;
+        var defaultOption = select ? select.querySelector("[data-production-location-option][data-value='CLOC00000010']") : null;
+        var label = select ? select.querySelector("[data-custom-select-label]") : null;
+        var menu = select ? select.querySelector("[data-custom-select-menu]") : null;
+        var button = select ? select.querySelector("[data-custom-select-button]") : null;
+
+        if (select) {
+            select.classList.remove("is-open");
+        }
+
+        if (label) {
+            label.textContent = "Sanaswadi";
+        }
+
+        if (menu) {
+            menu.hidden = true;
+            menu.querySelectorAll("[role='option']").forEach(function (option) {
+                option.toggleAttribute("aria-selected", option === defaultOption);
+            });
+        }
+
+        if (button) {
+            button.setAttribute("aria-expanded", "false");
+        }
+
+        syncProductionLocationFromOption(defaultOption);
+    }
+
     function resetMemberMasterForm(form) {
         form.reset();
         resetCustomSelect(form);
         resetMemberModeSelect(form);
+        resetProductionLocationSelect(form);
         clearStoredSkewDetails();
         clearExistingQrDetails();
         setValue("#Sku", "");
@@ -460,6 +510,8 @@
             setSaveStatus("invalid", "Unable to save member.");
             return;
         }
+
+        syncProductionLocationTitle();
 
         if (!formHasRequiredDetails(form)) {
             return;
@@ -633,6 +685,12 @@
             return;
         }
 
+        var productionLocationOption = event.target.closest("[data-production-location-option]");
+        if (productionLocationOption) {
+            syncProductionLocationFromOption(productionLocationOption);
+            return;
+        }
+
         if (event.target.closest("[data-show-existing-qr]")) {
             showExistingQr();
             return;
@@ -669,6 +727,8 @@
         if (event.target && event.target.matches("#NewBatchNo")) {
             validateNewBatchNo();
         }
+
+
     });
 
     document.addEventListener("input", function (event) {
@@ -692,6 +752,8 @@
         if (event.target && event.target.matches("#NewBatchNo")) {
             validateNewBatchNo();
         }
+
+
     });
 
     document.addEventListener("submit", function (event) {

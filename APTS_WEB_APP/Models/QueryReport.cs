@@ -17,6 +17,10 @@ namespace APTS_WEB_APP.Models
 
             public string ToLocation { get; set; }
 
+            public string MemberType { get; set; }
+
+            public string MemberSize { get; set; }
+
             public string LastEntryBy { get; set; }
 
             public string LastUpdatedDate { get; set; }

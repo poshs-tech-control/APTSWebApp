@@ -65,10 +65,11 @@ namespace APTS_WEB_APP.Helpers
 
             if (!response.IsSuccessStatusCode)
             {
+                string errorMessage = ExtractGoogleVisionErrorMessage(responseText);
                 return new OcrReadResult
                 {
                     Success = false,
-                    Message = "Google Vision OCR failed.",
+                    Message = string.IsNullOrWhiteSpace(errorMessage) ? "Google Vision OCR failed." : "Google Vision OCR failed: " + errorMessage,
                     Details = responseText
                 };
             }
@@ -83,6 +84,24 @@ namespace APTS_WEB_APP.Helpers
                 Success = true,
                 Text = detectedText
             };
+        }
+
+        private static string ExtractGoogleVisionErrorMessage(string responseText)
+        {
+            if (string.IsNullOrWhiteSpace(responseText))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                JObject error = JObject.Parse(responseText);
+                return error["error"]?["message"]?.ToString() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         public static string NormalizeQrScanValue(string value)

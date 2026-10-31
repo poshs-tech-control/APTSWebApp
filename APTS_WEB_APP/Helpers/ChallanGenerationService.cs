@@ -47,7 +47,8 @@ namespace APTS_WEB_APP.Helpers
                 Dispatcher = Value(row, "UserName"),
                 TransporterName = FirstValue(row, "TransporterName", "transportorname"),
                 EmailId = FirstValue(row, "ToEmailId", "Email"),
-                UserEmailId = Value(row, "UserMailId")
+                UserEmailId = Value(row, "UserMailId"),
+                TotalQty = InternalTransferTotalQty(details, row)
             };
 
             return mailService.GenerateMemberDispatchAndSendMail(bll, details);
@@ -211,6 +212,36 @@ namespace APTS_WEB_APP.Helpers
 
             return string.Empty;
         }
+
+        private static string InternalTransferTotalQty(DataSet dataSet, DataRow masterRow)
+        {
+            if (dataSet != null && dataSet.Tables.Count > 1)
+            {
+                DataTable detailTable = dataSet.Tables[1];
+                if (detailTable.Columns.Contains("RFID"))
+                {
+                    return detailTable.Rows.Count.ToString();
+                }
+
+                if (detailTable.Columns.Contains("TOTAL"))
+                {
+                    int total = 0;
+                    foreach (DataRow detailRow in detailTable.Rows)
+                    {
+                        int qty;
+                        if (int.TryParse(Convert.ToString(detailRow["TOTAL"]), out qty))
+                        {
+                            total += qty;
+                        }
+                    }
+
+                    return total.ToString();
+                }
+            }
+
+            return FirstValue(masterRow, "TotalDispatch");
+        }
+
         private static string Value(DataRow row, string columnName)
         {
             return row != null && row.Table.Columns.Contains(columnName)

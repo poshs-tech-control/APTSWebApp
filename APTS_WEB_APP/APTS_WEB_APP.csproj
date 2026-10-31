@@ -182,6 +182,7 @@
     <Compile Include="Models\PalletOrder.cs" />
     <Compile Include="Models\PalletPreDispatch.cs" />
     <Compile Include="Models\QueryReport.cs" />
+    <Compile Include="Models\MemberByClientBatchNoReport.cs" />
     <Compile Include="Models\SkewDetailsItem.cs" />
     <Compile Include="Models\SkuListItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -25881,6 +25882,7 @@
     <Content Include="Scripts\apts-member-collection-details.js" />
     <Content Include="Scripts\apts-member-transaction-report.js" />
     <Content Include="Scripts\apts-query-report.js" />
+    <Content Include="Scripts\apts-member-by-client-batch-no-report.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -29692,6 +29694,7 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="ChallanTemplate\**\*.*" />
+    <Content Include="Error.htm" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -29723,6 +29726,7 @@
     <Content Include="Views\Report\HighAgeReport.cshtml" />
     <Content Include="Views\Report\MemberTransactionReport.cshtml" />
     <Content Include="Views\Report\QueryReport.cshtml" />
+    <Content Include="Views\Report\MemberByClientBatchNo.cshtml" />
     <Content Include="Views\Report\Report.cshtml" />
     <Content Include="Views\PalletOrder\PalletOrder.cshtml" />
     <Content Include="Views\PalletOrder\PalletOrderDetails.cshtml" />

@@ -284,6 +284,10 @@ namespace APTS_WEB_APP.Helpers
                 output = output.Replace("{Content}", BuildRows(Table(dsDetail, 1),
                     row => "<tr><td colspan='1' style='border: 3px solid black; width:10%; text-align:center; vertical-align:middle;'>" + row.SerialNo + "</td><td colspan='7' style='border: 3px solid black; width:25%; text-align:center; vertical-align:middle;'>" + Col(row.Row, "SheetWidth") + "</td><td colspan='7' style='border: 3px solid black; width:25%; text-align:center; vertical-align:middle;'>" + Col(row.Row, "SheetLength1") + "</td><td colspan='7' style='border: 3px solid black; width:25%; text-align:center; vertical-align:middle;'>" + Col(row.Row, "SheetLength2") + "</td><td colspan='2' style='border: 3px solid black; width:25%; text-align:center; vertical-align:middle;'>" + Col(row.Row, "Counts") + "</td></tr>"));
             }
+            else if (templateName.IndexOf("InternalTransferMemberDispatch", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                output = output.Replace("{Content}", BuildInternalTransferRows(Table(dsDetail, 1)));
+            }
             else
             {
                 DataTable detailTable = HasRows(dsDetail, 1) ? Table(dsDetail, 1) : Table(dsDetail, 0);
@@ -314,6 +318,54 @@ namespace APTS_WEB_APP.Helpers
             return rows.ToString();
         }
 
+        private static string BuildInternalTransferRows(DataTable table)
+        {
+            if (table == null)
+            {
+                return string.Empty;
+            }
+
+            if (!table.Columns.Contains("RFID"))
+            {
+                return BuildRows(table,
+                    row => "<tr> <td colspan='2' style='border: 3px solid black;text-align: center; vertical-align: middle;'>" + row.SerialNo + "</td><td colspan='7' style='border: 3px solid black;width:50%;text-align: center; vertical-align: middle;'>Member (" + Col(row.Row, "MemberType") + " - " + Col(row.Row, "MemberWeight") + " )</td><td colspan='2' style='border: 3px solid black;text-align: center; vertical-align: middle;'>" + Col(row.Row, "TOTAL") + "</td></tr>");
+            }
+
+            var rows = new StringBuilder();
+            var groups = table.AsEnumerable()
+                .Select(row => CleanInternalTransferDescription(Convert.ToString(row["RFID"])))
+                .Where(description => !string.IsNullOrWhiteSpace(description))
+                .GroupBy(description => description)
+                .OrderBy(group => group.Key)
+                .ToList();
+
+            for (int i = 0; i < groups.Count; i++)
+            {
+                rows.AppendLine("<tr> <td colspan='2' style='border: 3px solid black;text-align: center; vertical-align: middle;'>" + (i + 1) + "</td><td colspan='7' style='border: 3px solid black;width:50%;text-align: center; vertical-align: middle;'>" + Html(groups[i].Key) + "</td><td colspan='2' style='border: 3px solid black;text-align: center; vertical-align: middle;'>" + groups[i].Count() + "</td></tr>");
+            }
+
+            return rows.ToString();
+        }
+
+        private static string CleanInternalTransferDescription(string description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return string.Empty;
+            }
+
+            string[] parts = description
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(part => part.Trim())
+                .Where(part => !string.IsNullOrWhiteSpace(part))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return parts.Length == 0
+                ? description.Trim()
+                : string.Join(",", parts);
+        }
+
         private static DataTable Table(DataSet dataSet, int index)
         {
             return dataSet != null && dataSet.Tables.Count > index ? dataSet.Tables[index] : null;
@@ -333,6 +385,26 @@ namespace APTS_WEB_APP.Helpers
             }
 
             return Html(Convert.ToString(row[columnName]));
+        }
+
+        private static string InternalTransferDescription(DataRow row)
+        {
+            if (HasColumn(row, "RFID"))
+            {
+                return Col(row, "RFID");
+            }
+
+            return "Member (" + Col(row, "MemberType") + " - " + Col(row, "MemberWeight") + " )";
+        }
+
+        private static string InternalTransferQty(DataRow row)
+        {
+            return HasColumn(row, "RFID") ? "1" : Col(row, "TOTAL");
+        }
+
+        private static bool HasColumn(DataRow row, string columnName)
+        {
+            return row != null && row.Table != null && row.Table.Columns.Contains(columnName);
         }
 
         private static string Html(string value)
@@ -396,19 +468,13 @@ namespace APTS_WEB_APP.Helpers
 
                 using (var smtp = new SmtpClient(host, smtpPort))
                 {
-                    try {
-                        smtp.EnableSsl = smtpEnableSsl;
-                        smtp.UseDefaultCredentials = false;
-                        smtp.Credentials = new NetworkCredential(userName, password);
-                        smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-                        ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-                        smtp.Timeout = 30000;
-                        smtp.Send(mailMessage);
-                    
-                    } catch {
-                    
-                    }
-                    
+                    smtp.EnableSsl = smtpEnableSsl;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential(userName, password);
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+                    smtp.Timeout = 30000;
+                    smtp.Send(mailMessage);
                 }
             }
         }

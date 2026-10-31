@@ -127,10 +127,20 @@
                 <p class="apts-field-status" data-new-batch-status aria-live="polite"></p>
             </div>
 
-            <div class="apts-field">
-                <label for="ProductionLocationText">Production Location</label>
-                <input id="ProductionLocationText" type="text" readonly class="apts-readonly-field" value="Sanaswadi" />
-                <input id="ProductionLocation" name="ProductionLocation" type="hidden" value="CLOC00000010" />
+            <div class="apts-field apts-custom-select-field">
+                <label for="ProductionLocation">Production Location</label>
+                <input id="ProductionLocation" name="ProductionLocation" type="hidden" value="CLOC00000010" data-custom-select-value />
+                <input id="ProductionLocationTitle" name="ProductionLocationTitle" type="hidden" value="Sanaswadi" />
+                <div class="apts-custom-select" data-custom-select data-production-location-select>
+                    <button class="apts-custom-select__button" type="button" aria-haspopup="listbox" aria-expanded="false" data-custom-select-button>
+                        <span data-custom-select-label>Sanaswadi</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    <div class="apts-custom-select__menu" role="listbox" hidden data-custom-select-menu>
+                        <button type="button" role="option" data-production-location-option data-value="CLOC00000010" data-location-title="Sanaswadi" aria-selected="true">Sanaswadi</button>
+                        <button type="button" role="option" data-production-location-option data-value="CLOC00000012" data-location-title="Chakan Godown">Chakan Godown</button>
+                    </div>
+                </div>
             </div>
 
             <div class="apts-field">
@@ -192,7 +202,7 @@
     <script src="~/Scripts/apts-custom-select.js"></script>
     <script src="@Url.Content("~/Scripts/apts-qr-scanner.js")?v=20260611-1"></script>
     <script src="@Url.Content("~/Scripts/apts-process-popup.js")?v=20260604"></script>
-    <script src="@Url.Content("~/Scripts/apts-member-master.js")?v=20260729-html-injection-1"></script>
+    <script src="@Url.Content("~/Scripts/apts-member-master.js")?v=20260805-production-location-custom"></script>
     <script src="@Url.Content("~/Scripts/apts-session-history.js")?v=20260701-1"></script>
     <script src="@Url.Content("~/Scripts/apts-language-translator.js")?v=20260702-1"></script>
 </body>

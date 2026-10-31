@@ -302,7 +302,6 @@
             var response = await fetch(endpoint, {
                 method: "POST",
                 credentials: "same-origin",
-                keepalive: true,
                 headers: { "Accept": "application/json" },
                 body: new FormData(form)
             });
@@ -323,7 +322,7 @@
             showPopup(result && result.message ? result.message : "Unable to save Member Collection.");
         } catch (error) {
             setStatus("", "");
-            showPopup("Unable to save Member Collection.");
+            showPopup("Unable to save Member Collection. Browser request failed before reaching server. Please check network and try again.");
         } finally {
             if (submitButton) {
                 submitButton.disabled = false;

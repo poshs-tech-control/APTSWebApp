@@ -1,0 +1,104 @@
+.file-list {
+  ul { 
+    margin-block-end: 0;
+    border: 1px solid $default-border;
+    border-radius: 8px;
+    padding: 0;
+    li{
+      border-radius: 8px;
+
+      &:hover {
+        a svg {
+          color: $primary;
+          fill: $primary;
+        }
+      }
+    }
+    a {
+      padding-block: 8px;
+      padding-inline: 7px;
+      font-size: 0.875rem;
+      font-weight: 400;
+
+      svg {
+        color: $default-text-color;
+        fill: $default-text-color;
+      }
+      &.active {
+        svg {
+          color: $white;
+          fill: $white;
+        }
+      }
+    }
+  }
+  .nav-link:focus {
+    color: $white !important;
+    background-color: $primary !important;
+    svg {
+      fill: $white !important;
+    }
+  }
+}
+
+.storage-card {
+  svg{
+    fill: $default-text-color;
+  }
+}
+
+.media-icon {
+  img {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+.folder-card .card {
+  border: 1px solid $default-border;
+  margin-block-end: 0;
+}
+
+.file-info-table {
+  th {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  td {
+    font-weight: 400;
+    font-size: 0.8375rem;
+  }
+}
+
+.file-details-swiper {
+  .corousel-img {
+    img {
+      border-radius: 5px;
+    }
+  }
+}
+
+.fm-card {
+  .fm-card-head {
+    display: flex;
+    align-items: center;
+    padding-inline: 1rem;
+    padding-block-start: 1rem;
+  }
+
+  .fm-card-body {
+    padding: 1.5rem !important;
+    padding-block-start: 0 !important;
+    text-align: center !important;
+
+    h6 {
+      margin-block-end: 0.25rem;
+      font-weight: normal;
+      font-size: 14px;
+    }
+    span {
+      color: $text-muted;
+      font-size: 11px;
+    }
+  }
+}

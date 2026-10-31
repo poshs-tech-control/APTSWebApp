@@ -18,4 +18,17 @@ namespace APTS_WEB_APP.Models
         [RegularExpression(@"^[a-zA-Z0-9_\- ]+$", ErrorMessage = "Location contains invalid characters.")]
         public string Locations { get; set; }
     }
+
+    public class LoginLocationItem
+    {
+        public string LocationCode { get; set; }
+
+        public string CustomerCode { get; set; }
+
+        public string LocationTitle { get; set; }
+
+        public string LocationType { get; set; }
+
+        public string LocationTypeName { get; set; }
+    }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -17,10 +18,37 @@ namespace APTS_WEB_APP.DataIntraction
     {
         public static readonly string ConnectionString = GetConnectionString();
         private const int InternalTransferCommandTimeoutSeconds = 180;
+        private const int LoginLocationCommandTimeoutSeconds = 120;
+        private const int LoginLocationRetryDelayMilliseconds = 1500;
+        private const string LoginLocationCacheFileName = "LoginLocationsCache.json";
+        private static readonly TimeSpan LoginLocationCacheDuration = TimeSpan.FromHours(12);
+        private static readonly object LoginLocationCacheLock = new object();
+        private static List<LoginLocationItem> cachedLoginLocations = new List<LoginLocationItem>();
+        private static DateTime cachedLoginLocationsAtUtc = DateTime.MinValue;
 
         private static bool ContainsHtmlInjection(params string[] values)
         {
             return values != null && values.Any(HtmlInjectionGuard.ContainsHtmlInjection);
+        }
+
+        private static string GetMemberProductionLocationCode(MemberMasterSaveRequest request)
+        {
+            string locationCode = request == null ? string.Empty : request.ProductionLocation;
+            string locationTitle = request == null ? string.Empty : request.ProductionLocationTitle;
+
+            if (string.Equals(locationCode, "CLOC00000012", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(locationTitle, "Chakan Godown", StringComparison.OrdinalIgnoreCase))
+            {
+                return "CLOC00000012";
+            }
+
+            return "CLOC00000010";
+        }
+
+        private static string GetMemberProductionLocationTitle(MemberMasterSaveRequest request)
+        {
+            string locationCode = GetMemberProductionLocationCode(request);
+            return string.Equals(locationCode, "CLOC00000012", StringComparison.OrdinalIgnoreCase) ? "Chakan Godown" : "Sanaswadi";
         }
 
         public static bool HasValidConnectionString
@@ -241,49 +269,216 @@ namespace APTS_WEB_APP.DataIntraction
             }
         }
 
-        public List<InternalTransfer.LocationItem> LoadLoginLocationList()
+        public List<LoginLocationItem> LoadLoginLocationList()
         {
-            var locations = new List<InternalTransfer.LocationItem>();
-
             if (!HasValidConnectionString)
             {
-                return locations;
+                return GetCachedLoginLocationList(true);
             }
 
             try
             {
-                using (var connection = new MySqlConnection(ConnectionString))
-                using (var command = new MySqlCommand("WebApp_LocationMaster", connection))
+                List<LoginLocationItem> locations = LoadLoginLocationListFromDatabase();
+                if (locations.Count == 0)
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    connection.Open();
+                    return GetCachedLoginLocationList(true);
+                }
 
-                    using (MySqlDataReader reader = command.ExecuteReader())
+                SetCachedLoginLocationList(locations);
+                return locations;
+            }
+            catch (MySqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine("WebApp_LocationMaster failed on first attempt: " + ex);
+            }
+
+            System.Threading.Thread.Sleep(LoginLocationRetryDelayMilliseconds);
+
+            try
+            {
+                List<LoginLocationItem> locations = LoadLoginLocationListFromDatabase();
+                if (locations.Count > 0)
+                {
+                    SetCachedLoginLocationList(locations);
+                    return locations;
+                }
+
+                return GetCachedLoginLocationList(true);
+            }
+            catch (MySqlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine("WebApp_LocationMaster failed after retry: " + ex);
+                return GetCachedLoginLocationList(true);
+            }
+        }
+
+        private static List<LoginLocationItem> LoadLoginLocationListFromDatabase()
+        {
+            var locations = new List<LoginLocationItem>();
+
+            using (var connection = new MySqlConnection(ConnectionString))
+            using (var command = new MySqlCommand("WebApp_LocationMaster", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = LoginLocationCommandTimeoutSeconds;
+                connection.Open();
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
                     {
-                        while (reader.Read())
+                        locations.Add(new LoginLocationItem
                         {
-                            locations.Add(new InternalTransfer.LocationItem
-                            {
-                                LocationCode = ReadString(reader, "LocationCode"),
-                                CustomerCode = ReadString(reader, "CustomerCode"),
-                                LocationTitle = ReadString(reader, "LocationTitle"),
-                                LocationType = ReadString(reader, "LocationType"),
-                                LocationTypeName = ReadString(reader, "LocationTypeName")
-                            });
-                        }
+                            LocationCode = ReadString(reader, "LocationCode"),
+                            CustomerCode = ReadString(reader, "CustomerCode"),
+                            LocationTitle = ReadString(reader, "LocationTitle"),
+                            LocationType = ReadString(reader, "LocationType"),
+                            LocationTypeName = ReadString(reader, "LocationTypeName")
+                        });
                     }
                 }
             }
-            catch (MySqlException)
-            {
-                return locations;
-            }
 
             return locations
+                .Where(location => !string.IsNullOrWhiteSpace(location.LocationCode))
                 .GroupBy(location => location.LocationCode)
                 .Select(group => group.First())
                 .OrderBy(location => location.LocationTitle)
                 .ToList();
+        }
+
+        private static List<LoginLocationItem> GetCachedLoginLocationList(bool allowStale)
+        {
+            lock (LoginLocationCacheLock)
+            {
+                if (cachedLoginLocations.Count == 0)
+                {
+                    cachedLoginLocations = LoadPersistentLoginLocationList();
+                    cachedLoginLocationsAtUtc = cachedLoginLocations.Count > 0 ? DateTime.UtcNow : DateTime.MinValue;
+                }
+
+                if (cachedLoginLocations.Count == 0)
+                {
+                    return new List<LoginLocationItem>();
+                }
+
+                bool cacheIsFresh = DateTime.UtcNow - cachedLoginLocationsAtUtc <= LoginLocationCacheDuration;
+                return allowStale || cacheIsFresh
+                    ? CloneLoginLocationList(cachedLoginLocations)
+                    : new List<LoginLocationItem>();
+            }
+        }
+
+        private static void SetCachedLoginLocationList(List<LoginLocationItem> locations)
+        {
+            lock (LoginLocationCacheLock)
+            {
+                cachedLoginLocations = CloneLoginLocationList(locations);
+                cachedLoginLocationsAtUtc = DateTime.UtcNow;
+            }
+
+            SavePersistentLoginLocationList(locations);
+        }
+
+        private static List<LoginLocationItem> CloneLoginLocationList(IEnumerable<LoginLocationItem> locations)
+        {
+            return (locations ?? Enumerable.Empty<LoginLocationItem>())
+                .Select(location => new LoginLocationItem
+                {
+                    LocationCode = location.LocationCode,
+                    CustomerCode = location.CustomerCode,
+                    LocationTitle = location.LocationTitle,
+                    LocationType = location.LocationType,
+                    LocationTypeName = location.LocationTypeName
+                })
+                .ToList();
+        }
+
+        private static List<LoginLocationItem> LoadPersistentLoginLocationList()
+        {
+            try
+            {
+                string cachePath = GetLoginLocationCacheFilePath();
+                if (string.IsNullOrWhiteSpace(cachePath) || !File.Exists(cachePath))
+                {
+                    return new List<LoginLocationItem>();
+                }
+
+                string cacheJson = File.ReadAllText(cachePath);
+                JArray rows = JArray.Parse(cacheJson);
+                var locations = new List<LoginLocationItem>();
+
+                foreach (JToken row in rows)
+                {
+                    locations.Add(new LoginLocationItem
+                    {
+                        LocationCode = Convert.ToString(row["LocationCode"]),
+                        CustomerCode = Convert.ToString(row["CustomerCode"]),
+                        LocationTitle = Convert.ToString(row["LocationTitle"]),
+                        LocationType = Convert.ToString(row["LocationType"]),
+                        LocationTypeName = Convert.ToString(row["LocationTypeName"])
+                    });
+                }
+
+                return locations
+                    .Where(location => !string.IsNullOrWhiteSpace(location.LocationCode))
+                    .GroupBy(location => location.LocationCode)
+                    .Select(group => group.First())
+                    .OrderBy(location => location.LocationTitle)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Login location persistent cache read failed: " + ex);
+                return new List<LoginLocationItem>();
+            }
+        }
+
+        private static void SavePersistentLoginLocationList(IEnumerable<LoginLocationItem> locations)
+        {
+            try
+            {
+                List<LoginLocationItem> locationList = CloneLoginLocationList(locations);
+                if (locationList.Count == 0)
+                {
+                    return;
+                }
+
+                string cachePath = GetLoginLocationCacheFilePath();
+                if (string.IsNullOrWhiteSpace(cachePath))
+                {
+                    return;
+                }
+
+                string cacheDirectory = Path.GetDirectoryName(cachePath);
+                if (!Directory.Exists(cacheDirectory))
+                {
+                    Directory.CreateDirectory(cacheDirectory);
+                }
+
+                var rows = new JArray(locationList.Select(location => new JObject
+                {
+                    ["LocationCode"] = location.LocationCode ?? string.Empty,
+                    ["CustomerCode"] = location.CustomerCode ?? string.Empty,
+                    ["LocationTitle"] = location.LocationTitle ?? string.Empty,
+                    ["LocationType"] = location.LocationType ?? string.Empty,
+                    ["LocationTypeName"] = location.LocationTypeName ?? string.Empty
+                }));
+
+                File.WriteAllText(cachePath, rows.ToString());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Login location persistent cache write failed: " + ex);
+            }
+        }
+
+        private static string GetLoginLocationCacheFilePath()
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            return string.IsNullOrWhiteSpace(baseDirectory)
+                ? string.Empty
+                : Path.Combine(baseDirectory, "App_Data", LoginLocationCacheFileName);
         }
         public bool ValidateLocationAccess(string userCode, string locationCode)
         {
@@ -319,7 +514,7 @@ namespace APTS_WEB_APP.DataIntraction
             }
         }
 
-        public long InsertUserLoginHistory(LoginUser loginUser, InternalTransfer.LocationItem selectedLocation, string ipAddress, string auditTrail)
+        public long InsertUserLoginHistory(LoginUser loginUser, LoginLocationItem selectedLocation, string ipAddress, string auditTrail)
         {
             if (loginUser == null || string.IsNullOrWhiteSpace(loginUser.UserCode))
             {
@@ -891,12 +1086,14 @@ namespace APTS_WEB_APP.DataIntraction
             {
                 return new MemberSaveResult { Message = "Unable to update member." };
             }
-            if (ContainsHtmlInjection(request.MemberMode, request.QrCode, request.ExistingRfid, request.ExistingMemberCode, request.Sku, request.OldBatchNo, request.NewBatchNo, request.MemberTypeCode, request.MemberWeight, request.SkuMemberSize, request.ProductionLocation, request.Remarks))
+            if (ContainsHtmlInjection(request.MemberMode, request.QrCode, request.ExistingRfid, request.ExistingMemberCode, request.Sku, request.OldBatchNo, request.NewBatchNo, request.MemberTypeCode, request.MemberWeight, request.SkuMemberSize, request.ProductionLocation, request.ProductionLocationTitle, request.Remarks))
             {
                 return new MemberSaveResult { Message = "HTML markup is not allowed in Member Master fields." };
             }
 
             string memberCode = string.IsNullOrWhiteSpace(request.ExistingMemberCode) ? string.Empty : request.ExistingMemberCode.Trim();
+            string productionLocationCode = GetMemberProductionLocationCode(request);
+            string productionLocationTitle = GetMemberProductionLocationTitle(request);
             string oldRfid = QrOcrHelper.NormalizeQrScanValue(request.ExistingRfid);
             string newRfid = QrOcrHelper.NormalizeQrScanValue(request.NewBatchNo);
             if (string.IsNullOrWhiteSpace(memberCode) || string.IsNullOrWhiteSpace(oldRfid) || string.IsNullOrWhiteSpace(newRfid))
@@ -942,8 +1139,8 @@ WHERE MemberCode = @MemberCode AND RFID = @OldRFID AND UPPER(Active) = 'TRUE'", 
                                 command.Parameters.AddWithValue("@MemberType", request.MemberTypeCode.Trim());
                                 command.Parameters.AddWithValue("@MemberWeight", request.MemberWeight.Trim());
                                 command.Parameters.AddWithValue("@MemberDimension", request.SkuMemberSize.Trim());
-                                command.Parameters.AddWithValue("@ProductionLoc", "CLOC00000010");
-                                command.Parameters.AddWithValue("@CurrentLocation", "CLOC00000010");
+                                command.Parameters.AddWithValue("@ProductionLoc", productionLocationCode);
+                                command.Parameters.AddWithValue("@CurrentLocation", productionLocationCode);
                                 command.Parameters.AddWithValue("@LocationTypeCode", "MISC0000019");
                                 command.Parameters.AddWithValue("@Unit", "MISC0000026");
                                 command.Parameters.AddWithValue("@Remarks", "Batch No Mapping");
@@ -973,7 +1170,7 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
                             {
                                 command.CommandType = CommandType.Text;
                                 command.Parameters.AddWithValue("@NewRFID", newRfid);
-                                command.Parameters.AddWithValue("@LocationTitle", "Sanaswadi");
+                                command.Parameters.AddWithValue("@LocationTitle", productionLocationTitle);
                                 command.Parameters.AddWithValue("@UserName", string.IsNullOrWhiteSpace(userName) ? userCode : userName);
                                 command.Parameters.AddWithValue("@LastStatus", "Manufacture");
                                 command.Parameters.AddWithValue("@MemberCode", memberCode);
@@ -1044,11 +1241,13 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
             {
                 return null;
             }
-            if (request == null || ContainsHtmlInjection(request.MemberMode, request.QrCode, request.ExistingRfid, request.ExistingMemberCode, request.Sku, request.OldBatchNo, request.NewBatchNo, request.MemberTypeCode, request.MemberWeight, request.SkuMemberSize, request.ProductionLocation, request.Remarks))
+            if (request == null || ContainsHtmlInjection(request.MemberMode, request.QrCode, request.ExistingRfid, request.ExistingMemberCode, request.Sku, request.OldBatchNo, request.NewBatchNo, request.MemberTypeCode, request.MemberWeight, request.SkuMemberSize, request.ProductionLocation, request.ProductionLocationTitle, request.Remarks))
             {
                 return new MemberSaveResult { Message = "HTML markup is not allowed in Member Master fields." };
             }
 
+            string productionLocationCode = GetMemberProductionLocationCode(request);
+            string productionLocationTitle = GetMemberProductionLocationTitle(request);
             DateTime currentDate = DateTime.Now;
 
             try
@@ -1064,12 +1263,12 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
                     command.Parameters.AddWithValue("@P_MemberType", request.MemberTypeCode.Trim());
                     command.Parameters.AddWithValue("@P_MemberCategory", string.Empty);
                     command.Parameters.AddWithValue("@P_MemberWeight", request.MemberWeight.Trim());
-                    command.Parameters.AddWithValue("@P_ProductionLoc", "CLOC00000010");
+                    command.Parameters.AddWithValue("@P_ProductionLoc", productionLocationCode);
                     command.Parameters.AddWithValue("@P_ProductionDate", currentDate);
                     command.Parameters.AddWithValue("@P_MemberExpiryDate", currentDate);
-                    command.Parameters.AddWithValue("@P_CurrentLocation", "CLOC00000010");
+                    command.Parameters.AddWithValue("@P_CurrentLocation", productionLocationCode);
                     command.Parameters.AddWithValue("@P_LocationTypeCode", "MISC0000019");
-                    command.Parameters.AddWithValue("@P_LocationTitle", "Sanaswadi");
+                    command.Parameters.AddWithValue("@P_LocationTitle", productionLocationTitle);
                     command.Parameters.AddWithValue("@P_RFID", QrOcrHelper.NormalizeQrScanValue(request.OldBatchNo));
                     command.Parameters.AddWithValue("@P_Dimention", request.SkuMemberSize.Trim());
                     command.Parameters.AddWithValue("@P_Unit", "MISC0000026");
@@ -1262,8 +1461,18 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
                 };
             }
 
+            string lastLocation = LoadMemberLastLocation(rfid);
+            string location = string.IsNullOrWhiteSpace(currentLocation) ? string.Empty : currentLocation.Trim();
+            bool locationMismatch = !string.IsNullOrWhiteSpace(location)
+                && !string.IsNullOrWhiteSpace(lastLocation)
+                && !string.Equals(lastLocation.Trim(), location, StringComparison.OrdinalIgnoreCase);
+            string lastStatus = LoadMemberLatestStatus(rfid);
+            bool isPalletAssembleStatus = string.Equals(lastStatus, "Pallet Assemble", StringComparison.OrdinalIgnoreCase);
             PalletPreDispatch.PreDispatchValidationResult dateValidation = LoadPalletAssembleDateValidation(rfid.Trim());
-            if (dateValidation != null && string.Equals(dateValidation.PalletStatus, "ALLOWED", StringComparison.OrdinalIgnoreCase))
+            bool isWithinThreeDayWindow = dateValidation != null
+                && string.Equals(dateValidation.PalletStatus, "ALLOWED", StringComparison.OrdinalIgnoreCase);
+
+            if (isPalletAssembleStatus && isWithinThreeDayWindow)
             {
                 return new PalletAssemble.AssembleMemberValidationResult
                 {
@@ -1272,12 +1481,31 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
                     MemberCode = member.MemberCode,
                     MemberType = member.MemberType,
                     MemberSize = member.MemberSize,
+                    LastLocation = lastLocation,
+                    CurrentLocation = location,
+                    LocationMismatch = locationMismatch,
+                    Message = locationMismatch
+                        ? "Pallet created within 3 days. Location mismatch bypass is not allowed."
+                        : "Member already in Pallet Assemble status."
+                };
+            }
+
+            if (!isPalletAssembleStatus && isWithinThreeDayWindow)
+            {
+                return new PalletAssemble.AssembleMemberValidationResult
+                {
+                    IsValid = false,
+                    Rfid = rfid,
+                    MemberCode = member.MemberCode,
+                    MemberType = member.MemberType,
+                    MemberSize = member.MemberSize,
+                    LastLocation = lastLocation,
+                    CurrentLocation = location,
+                    LocationMismatch = locationMismatch,
                     Message = "Pallet already created within 3 days"
                 };
             }
 
-            string lastLocation = LoadMemberLastLocation(rfid);
-            string location = string.IsNullOrWhiteSpace(currentLocation) ? string.Empty : currentLocation.Trim();
             return new PalletAssemble.AssembleMemberValidationResult
             {
                 IsValid = true,
@@ -1288,9 +1516,8 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
                 MemberSize = member.MemberSize,
                 LastLocation = lastLocation,
                 CurrentLocation = location,
-                LocationMismatch = !string.IsNullOrWhiteSpace(location)
-                    && !string.IsNullOrWhiteSpace(lastLocation)
-                    && !string.Equals(lastLocation.Trim(), location, StringComparison.OrdinalIgnoreCase)
+                LocationMismatch = locationMismatch,
+                RequiresBypass = isPalletAssembleStatus
             };
         }
 
@@ -1307,7 +1534,8 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
             }
 
             PalletPreDispatch.PreDispatchValidationResult dateValidation = LoadPalletAssembleDateValidation(rfid.Trim());
-            if (dateValidation != null && string.Equals(dateValidation.PalletStatus, "ALLOWED", StringComparison.OrdinalIgnoreCase))
+            if (dateValidation != null
+                && string.Equals(dateValidation.PalletStatus, "ALLOWED", StringComparison.OrdinalIgnoreCase))
             {
                 return new PalletAssemble.AssembleBypassResult { Success = false, Message = "Pallet created within 3 days. Pallet Assemble is not allowed." };
             }
@@ -1349,62 +1577,80 @@ WHERE MemberId = @MemberCode OR LastTransactionId = @MemberCode OR RFID = @OldRF
             try
             {
                 using (var connection = new MySqlConnection(ConnectionString))
-                using (var command = new MySqlCommand("WebApp_Iu_palletAssemble", connection))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@P_PalletCode", "0");
-                    command.Parameters.AddWithValue("@P_TotalMember", string.IsNullOrWhiteSpace(request.TotalMember) ? "0" : request.TotalMember.Trim());
-                    command.Parameters.AddWithValue("@P_ClientLocation", request.ClientLocation.Trim());
-                    command.Parameters.AddWithValue("@P_Active", "True");
-                    command.Parameters.AddWithValue("@P_CreatedBy", string.IsNullOrWhiteSpace(userCode) ? string.Empty : userCode.Trim());
-                    command.Parameters.AddWithValue("@P_IPAdd", string.IsNullOrWhiteSpace(ipAddress) ? string.Empty : ipAddress.Trim());
-                    command.Parameters.AddWithValue("@P_PalletOrderCode", request.PalletOrderCode.Trim());
-                    command.Parameters.AddWithValue("@P_PalletOrderdtlCode", request.PalletOrderdtlCode.Trim());
-                    command.Parameters.AddWithValue("@P_SheetWidth", string.IsNullOrWhiteSpace(request.SheetWidth) ? string.Empty : request.SheetWidth.Trim());
-                    command.Parameters.AddWithValue("@P_SheetLength1", string.IsNullOrWhiteSpace(request.SheetLength1) ? string.Empty : request.SheetLength1.Trim());
-                    command.Parameters.AddWithValue("@P_SheetLength2", string.IsNullOrWhiteSpace(request.SheetLength2) ? string.Empty : request.SheetLength2.Trim());
                     connection.Open();
-
-                    using (MySqlDataReader reader = command.ExecuteReader())
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        string palletCode = reader.Read() ? ReadString(reader, "PalletCode") : string.Empty;
-                        if (string.IsNullOrWhiteSpace(palletCode))
+                        try
                         {
-                            return new PalletAssemble.AssembleSaveResult { Success = false, Message = "Unable to save Pallet Assemble." };
-                        }
-
-                        reader.Close();
-
-                        string detailMessage;
-                        bool detailSaved = SavePalletAssembleDetails(
-                            connection,
-                            palletCode,
-                            request.PalletOrderdtlCode,
-                            members,
-                            userCode,
-                            string.IsNullOrWhiteSpace(userName) ? userCode : userName,
-                            ipAddress,
-                            request.ToLocation,
-                            out detailMessage);
-
-                        if (!detailSaved)
-                        {
-                            return new PalletAssemble.AssembleSaveResult
+                            using (var command = new MySqlCommand("WebApp_Iu_palletAssemble", connection, transaction))
                             {
-                                Success = false,
-                                PalletCode = palletCode,
-                                Message = string.IsNullOrWhiteSpace(detailMessage) ? "Unable to save Pallet Assemble details." : detailMessage
-                            };
+                                command.CommandType = CommandType.StoredProcedure;
+                                command.Parameters.AddWithValue("@P_PalletCode", "0");
+                                command.Parameters.AddWithValue("@P_TotalMember", string.IsNullOrWhiteSpace(request.TotalMember) ? "0" : request.TotalMember.Trim());
+                                command.Parameters.AddWithValue("@P_ClientLocation", request.ClientLocation.Trim());
+                                command.Parameters.AddWithValue("@P_Active", "True");
+                                command.Parameters.AddWithValue("@P_CreatedBy", string.IsNullOrWhiteSpace(userCode) ? string.Empty : userCode.Trim());
+                                command.Parameters.AddWithValue("@P_IPAdd", string.IsNullOrWhiteSpace(ipAddress) ? string.Empty : ipAddress.Trim());
+                                command.Parameters.AddWithValue("@P_PalletOrderCode", request.PalletOrderCode.Trim());
+                                command.Parameters.AddWithValue("@P_PalletOrderdtlCode", request.PalletOrderdtlCode.Trim());
+                                command.Parameters.AddWithValue("@P_SheetWidth", string.IsNullOrWhiteSpace(request.SheetWidth) ? string.Empty : request.SheetWidth.Trim());
+                                command.Parameters.AddWithValue("@P_SheetLength1", string.IsNullOrWhiteSpace(request.SheetLength1) ? string.Empty : request.SheetLength1.Trim());
+                                command.Parameters.AddWithValue("@P_SheetLength2", string.IsNullOrWhiteSpace(request.SheetLength2) ? string.Empty : request.SheetLength2.Trim());
+
+                                using (MySqlDataReader reader = command.ExecuteReader())
+                                {
+                                    string palletCode = reader.Read() ? ReadString(reader, "PalletCode") : string.Empty;
+                                    if (string.IsNullOrWhiteSpace(palletCode))
+                                    {
+                                        transaction.Rollback();
+                                        return new PalletAssemble.AssembleSaveResult { Success = false, Message = "Unable to save Pallet Assemble." };
+                                    }
+
+                                    reader.Close();
+
+                                    string detailMessage;
+                                    bool detailSaved = SavePalletAssembleDetails(
+                                        connection,
+                                        transaction,
+                                        palletCode,
+                                        request.PalletOrderdtlCode,
+                                        members,
+                                        userCode,
+                                        string.IsNullOrWhiteSpace(userName) ? userCode : userName,
+                                        ipAddress,
+                                        request.ToLocation,
+                                        out detailMessage);
+
+                                    if (!detailSaved)
+                                    {
+                                        transaction.Rollback();
+                                        return new PalletAssemble.AssembleSaveResult
+                                        {
+                                            Success = false,
+                                            PalletCode = palletCode,
+                                            Message = string.IsNullOrWhiteSpace(detailMessage) ? "Unable to save Pallet Assemble details." : detailMessage
+                                        };
+                                    }
+
+                                    IncrementPalletAssembleCount(connection, transaction, request.PalletOrderdtlCode);
+                                    UpdateCompletedPalletOrderDetailStatus(connection, transaction, request.PalletOrderdtlCode);
+
+                                    transaction.Commit();
+                                    return new PalletAssemble.AssembleSaveResult
+                                    {
+                                        Success = true,
+                                        PalletCode = palletCode,
+                                        Message = "Pallet Assemble Saved Successfully"
+                                    };
+                                }
+                            }
                         }
-
-                        UpdateCompletedPalletOrderDetailStatus(connection, request.PalletOrderdtlCode);
-
-                        return new PalletAssemble.AssembleSaveResult
+                        catch
                         {
-                            Success = true,
-                            PalletCode = palletCode,
-                            Message = "Pallet Assemble Saved Successfully"
-                        };
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -2133,7 +2379,7 @@ LIMIT 1", connection))
             }
 
             string detailError;
-            bool detailsSaved = SaveInternalTransferDetails(matDispCode, members, out detailError);
+            bool detailsSaved = SaveInternalTransferDetails(matDispCode, request, members, userCode, out detailError);
             if (!detailsSaved)
             {
                 return new InternalTransfer.DispatchSaveResult
@@ -2827,7 +3073,14 @@ LIMIT 1", connection))
 
         public PalletPreDispatch.PreDispatchValidationResult ValidatePreDispatchMember(string rfid)
         {
-            int isValidStatus = CheckCurrentMemberStatus(rfid, "Pallet Assemble");
+            string scanValue = QrOcrHelper.NormalizeQrScanValue(rfid);
+            string resolvedRfid = LoadRfidBySticker(scanValue);
+            if (string.IsNullOrWhiteSpace(resolvedRfid))
+            {
+                resolvedRfid = scanValue;
+            }
+
+            int isValidStatus = CheckCurrentMemberStatus(resolvedRfid, "Pallet Assemble");
             if (isValidStatus <= 0)
             {
                 return new PalletPreDispatch.PreDispatchValidationResult
@@ -2847,7 +3100,7 @@ LIMIT 1", connection))
                     using (var command = new MySqlCommand("WebApp_Validation_PreDispatch_In_3Days", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@P_RFID", rfid);
+                        command.Parameters.AddWithValue("@P_RFID", resolvedRfid);
                         connection.Open();
 
                         using (MySqlDataReader reader = command.ExecuteReader())
@@ -2878,6 +3131,11 @@ LIMIT 1", connection))
                     IsAllowed = false,
                     Message = "Member assemble date validation not found."
                 };
+            }
+
+            if (string.IsNullOrWhiteSpace(dateValidation.RfidNo))
+            {
+                dateValidation.RfidNo = resolvedRfid;
             }
 
             dateValidation.IsAllowed = string.Equals(dateValidation.PalletStatus, "ALLOWED", StringComparison.OrdinalIgnoreCase);
@@ -3561,6 +3819,7 @@ LIMIT 1", connection))
 
         private static bool SavePalletAssembleDetails(
             MySqlConnection connection,
+            MySqlTransaction transaction,
             string palletCode,
             string palletOrderdtlCode,
             IEnumerable<PalletAssemble.AssembleSaveMemberInput> members,
@@ -3572,9 +3831,9 @@ LIMIT 1", connection))
         {
             message = string.Empty;
             string jsonData = BuildPalletAssembleDetailJson(palletCode, palletOrderdtlCode, members, userCode, ipAddress);
-            string lastTransferTo = LoadMemberLastTransferTo(connection, members);
+            string lastTransferTo = LoadMemberLastTransferTo(connection, transaction, members);
 
-            using (var command = new MySqlCommand("WebApp_Bulk_PalletAssembleDt", connection))
+            using (var command = new MySqlCommand("WebApp_Bulk_PalletAssembleDt", connection, transaction))
             {
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@P_JsonData", jsonData);
@@ -3598,7 +3857,25 @@ LIMIT 1", connection))
             }
         }
 
-        private static void UpdateCompletedPalletOrderDetailStatus(MySqlConnection connection, string palletOrderdtlCode)
+        // Increment only after pallet details are saved so a failed detail transaction cannot inflate the order count.
+        private static void IncrementPalletAssembleCount(MySqlConnection connection, MySqlTransaction transaction, string palletOrderdtlCode)
+        {
+            if (connection == null || string.IsNullOrWhiteSpace(palletOrderdtlCode))
+            {
+                return;
+            }
+
+            using (var updateCommand = new MySqlCommand(
+                "UPDATE PalletOrderDtl SET AssembleCounts = COALESCE(AssembleCounts, 0) + 1 WHERE PalletOrderdtlCode = @PalletOrderdtlCode",
+                connection,
+                transaction))
+            {
+                updateCommand.CommandType = CommandType.Text;
+                updateCommand.Parameters.AddWithValue("@PalletOrderdtlCode", palletOrderdtlCode.Trim());
+                updateCommand.ExecuteNonQuery();
+            }
+        }
+        private static void UpdateCompletedPalletOrderDetailStatus(MySqlConnection connection, MySqlTransaction transaction, string palletOrderdtlCode)
         {
             if (connection == null || string.IsNullOrWhiteSpace(palletOrderdtlCode))
             {
@@ -3610,7 +3887,8 @@ LIMIT 1", connection))
 
             using (var countCommand = new MySqlCommand(
                 "SELECT Counts, AssembleCounts FROM PalletOrderDtl WHERE PalletOrderdtlCode = @PalletOrderdtlCode LIMIT 1",
-                connection))
+                connection,
+                transaction))
             {
                 countCommand.CommandType = CommandType.Text;
                 countCommand.Parameters.AddWithValue("@PalletOrderdtlCode", palletOrderdtlCode.Trim());
@@ -3634,7 +3912,8 @@ LIMIT 1", connection))
 
             using (var updateCommand = new MySqlCommand(
                 "UPDATE PalletOrderDtl SET Status = @Status WHERE PalletOrderdtlCode = @PalletOrderdtlCode",
-                connection))
+                connection,
+                transaction))
             {
                 updateCommand.CommandType = CommandType.Text;
                 updateCommand.Parameters.AddWithValue("@Status", "Completed");
@@ -3643,7 +3922,7 @@ LIMIT 1", connection))
             }
         }
 
-        private static string LoadMemberLastTransferTo(MySqlConnection connection, IEnumerable<PalletAssemble.AssembleSaveMemberInput> members)
+        private static string LoadMemberLastTransferTo(MySqlConnection connection, MySqlTransaction transaction, IEnumerable<PalletAssemble.AssembleSaveMemberInput> members)
         {
             List<string> rfids = (members ?? Enumerable.Empty<PalletAssemble.AssembleSaveMemberInput>())
                 .Where(member => member != null && !string.IsNullOrWhiteSpace(member.Rfid))
@@ -3659,7 +3938,8 @@ LIMIT 1", connection))
             string parameterList = string.Join(",", rfids.Select((rfid, index) => "@RFID" + index));
             using (var command = new MySqlCommand(
                 "SELECT LastTransferTo FROM memberlastupdate WHERE RFID IN (" + parameterList + ") OR TaggMember IN (" + parameterList + ") ORDER BY LastUpdatedDate DESC LIMIT 1",
-                connection))
+                connection,
+                transaction))
             {
                 command.CommandType = CommandType.Text;
                 for (int index = 0; index < rfids.Count; index += 1)
@@ -4682,7 +4962,7 @@ LIMIT 1", connection))
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@P_RFID", rfid.Trim());
                     command.Parameters.AddWithValue("@P_CurrentLocation", string.Empty);
-                    command.Parameters.AddWithValue("@P_CurrentStatus", "Received,Received - Damage,Internal Transfer,Pre Dispatch,Pallet Dispatch,Pallet Disassemble From Client");
+                    command.Parameters.AddWithValue("@P_CurrentStatus", "Received,Received - Damage,Internal Transfer,Pre Dispatch,Pallet Dispatch,Pallet Disassemble From Client,Pallet Assemble");
                     connection.Open();
 
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -4762,7 +5042,12 @@ LIMIT 1", connection))
             }
         }
 
-        private static bool SaveInternalTransferDetails(string matDispCode, IEnumerable<InternalTransfer.TransferMemberInput> members, out string errorMessage)
+        private static bool SaveInternalTransferDetails(
+            string matDispCode,
+            InternalTransfer.DispatchSaveRequest request,
+            IEnumerable<InternalTransfer.TransferMemberInput> members,
+            string userCode,
+            out string errorMessage)
         {
             errorMessage = string.Empty;
 
@@ -4793,8 +5078,122 @@ LIMIT 1", connection))
                     return true;
                 }
 
+                if (IsInternalTransferBulkGroupByError(ex)
+                    && SaveInternalTransferDetailsDirect(matDispCode, request, members, userCode))
+                {
+                    errorMessage = string.Empty;
+                    return true;
+                }
+
                 errorMessage = IsFatalMySqlCommandMessage(ex) ? "Unable to confirm Internal Transfer details. Please try again." : ex.Message;
                 return false;
+            }
+        }
+
+        private static bool IsInternalTransferBulkGroupByError(MySqlException ex)
+        {
+            if (ex == null || string.IsNullOrWhiteSpace(ex.Message))
+            {
+                return false;
+            }
+
+            return ex.Message.IndexOf("only_full_group_by", StringComparison.OrdinalIgnoreCase) >= 0
+                && ex.Message.IndexOf("MatDispDTCode", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static bool SaveInternalTransferDetailsDirect(
+            string matDispCode,
+            InternalTransfer.DispatchSaveRequest request,
+            IEnumerable<InternalTransfer.TransferMemberInput> members,
+            string userCode)
+        {
+            List<InternalTransfer.TransferMemberInput> cleanMembers = CleanInternalTransferMembers(members);
+            if (!HasValidConnectionString || string.IsNullOrWhiteSpace(matDispCode) || cleanMembers.Count == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                using (var connection = new MySqlConnection(ConnectionString))
+                {
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            for (int index = 0; index < cleanMembers.Count; index++)
+                            {
+                                InternalTransfer.TransferMemberInput member = cleanMembers[index];
+                                string detailCode = matDispCode.Trim() + "D" + (index + 1).ToString("000");
+
+                                using (var command = new MySqlCommand(
+                                    @"INSERT INTO memberdispatchdtl
+    (MatDispDTCode, MatDispCode, MemberCode, RFID)
+SELECT @MatDispDTCode, @MatDispCode, @MemberCode, @RFID
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM memberdispatchdtl
+    WHERE MatDispCode = @MatDispCode AND MemberCode = @MemberCode
+)", connection, transaction))
+                                {
+                                    command.CommandType = CommandType.Text;
+                                    command.CommandTimeout = InternalTransferCommandTimeoutSeconds;
+                                    command.Parameters.AddWithValue("@MatDispDTCode", detailCode);
+                                    command.Parameters.AddWithValue("@MatDispCode", matDispCode.Trim());
+                                    command.Parameters.AddWithValue("@MemberCode", (member.MemberCode ?? string.Empty).Trim());
+                                    command.Parameters.AddWithValue("@RFID", (member.Rfid ?? string.Empty).Trim());
+                                    command.ExecuteNonQuery();
+                                }
+
+                                UpdateInternalTransferMemberLastUpdateDirect(connection, transaction, request, member, matDispCode, userCode);
+                            }
+
+                            transaction.Commit();
+                            return HasInternalTransferDetails(matDispCode);
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (MySqlException)
+            {
+                return false;
+            }
+        }
+
+        private static void UpdateInternalTransferMemberLastUpdateDirect(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            InternalTransfer.DispatchSaveRequest request,
+            InternalTransfer.TransferMemberInput member,
+            string matDispCode,
+            string userCode)
+        {
+            string toLocation = request == null ? string.Empty : (request.ToLocation ?? string.Empty).Trim();
+
+            using (var command = new MySqlCommand(
+                @"UPDATE memberlastupdate
+SET LastStatus = 'Internal Transfer',
+    LastLocation = @ToLocation,
+    LastTransferTo = @ToLocation,
+    LastTransactionId = @MatDispCode,
+    LastEntryBy = @UserCode,
+    LastUpdatedDate = NOW()
+WHERE RFID = @RFID OR MemberId = @MemberCode OR LastTransactionId = @MemberCode", connection, transaction))
+            {
+                command.CommandType = CommandType.Text;
+                command.CommandTimeout = InternalTransferCommandTimeoutSeconds;
+                command.Parameters.AddWithValue("@ToLocation", toLocation);
+                command.Parameters.AddWithValue("@MatDispCode", matDispCode.Trim());
+                command.Parameters.AddWithValue("@UserCode", string.IsNullOrWhiteSpace(userCode) ? "SYSTEM" : userCode.Trim());
+                command.Parameters.AddWithValue("@RFID", (member.Rfid ?? string.Empty).Trim());
+                command.Parameters.AddWithValue("@MemberCode", (member.MemberCode ?? string.Empty).Trim());
+                command.ExecuteNonQuery();
             }
         }
 
@@ -5249,11 +5648,28 @@ LIMIT 1", connection))
             string connectionString = SecretSettingReader.Read("APTS_CONNECTION_STRING", string.Empty);
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
-                return connectionString;
+                return NormalizeMySqlConnectionString(connectionString);
             }
 
             ConnectionStringSettings connectionSetting = ConfigurationManager.ConnectionStrings["ConnectionString"];
-            return connectionSetting == null ? string.Empty : SecretSettingReader.NormalizeSecretValue(connectionSetting.ConnectionString);
+            return connectionSetting == null
+                ? string.Empty
+                : NormalizeMySqlConnectionString(SecretSettingReader.NormalizeSecretValue(connectionSetting.ConnectionString));
+        }
+
+        private static string NormalizeMySqlConnectionString(string connectionString)
+        {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return string.Empty;
+            }
+
+            var builder = new MySqlConnectionStringBuilder(connectionString)
+            {
+                AllowPublicKeyRetrieval = true
+            };
+
+            return builder.ConnectionString;
         }
 
         private static void AddParameters(MySqlCommand command, IDictionary<string, object> parameters)
@@ -5952,6 +6368,40 @@ LIMIT 1", connection))
             }
         }
 
+        public List<MemberByClientBatchNoReport.ReportRow> LoadMemberByClientBatchNoReport(string clientBatchNo)
+        {
+            if (!HasValidConnectionString)
+            {
+                throw new InvalidOperationException("Database connection is not configured.");
+            }
+
+            var rows = new List<MemberByClientBatchNoReport.ReportRow>();
+            using (var connection = new MySqlConnection(ConnectionString))
+            using (var command = new MySqlCommand("WebApp_RPT_MemberLastUpdateByClientBatchNo", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add("@p_ClientBatchNo", MySqlDbType.VarChar, 50).Value = clientBatchNo.Trim();
+                connection.Open();
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        rows.Add(new MemberByClientBatchNoReport.ReportRow
+                        {
+                            RFID = ReadString(reader, "RFID"),
+                            LastEntryBy = ReadString(reader, "LastEntryBy"),
+                            LastUpdatedDate = ReadString(reader, "LastUpdatedDate"),
+                            LastTransferTo = ReadString(reader, "LastTransferTo"),
+                            LastStatus = ReadString(reader, "LastStatus")
+                        });
+                    }
+                }
+            }
+
+            return rows;
+        }
+
         public QueryReport.Result LoadQueryReport(string rfid)
         {
             if (!HasValidConnectionString || string.IsNullOrWhiteSpace(rfid))
@@ -5968,6 +6418,8 @@ LIMIT 1", connection))
                     command.Parameters.AddWithValue("@P_RFId", rfid.Trim());
                     connection.Open();
 
+                    QueryReport.Result result;
+
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
                         if (!reader.Read())
@@ -5975,23 +6427,75 @@ LIMIT 1", connection))
                             return null;
                         }
 
-                        return new QueryReport.Result
+                        result = new QueryReport.Result
                         {
                             RFID = ReadString(reader, "RFID"),
                             AllTagRFIDs = ReadString(reader, "AllTagRFIDs"),
                             FromLocation = ReadString(reader, "fromLocation"),
                             ToLocation = ReadString(reader, "ToLocation"),
+                            MemberType = ReadFirstString(reader, "MemberType", "MemberTypeName"),
+                            MemberSize = ReadFirstString(reader, "MemberSize", "MemberDimension"),
                             LastEntryBy = ReadString(reader, "LastEntryBy"),
                             LastUpdatedDate = ReadString(reader, "LastUpdatedDate"),
                             LastStatus = ReadString(reader, "LastStatus"),
                             ClientBatchNo = ReadString(reader, "ClientBatchNo")
                         };
                     }
+
+                    PopulateQueryReportMemberDetails(connection, result, rfid);
+                    return result;
                 }
             }
             catch (MySqlException)
             {
                 return null;
+            }
+        }
+
+        private static void PopulateQueryReportMemberDetails(MySqlConnection connection, QueryReport.Result result, string scannedRfid)
+        {
+            if (connection == null || result == null
+                || (!string.IsNullOrWhiteSpace(result.MemberType) && !string.IsNullOrWhiteSpace(result.MemberSize)))
+            {
+                return;
+            }
+
+            string lookupRfid = !string.IsNullOrWhiteSpace(result.RFID) ? result.RFID : scannedRfid;
+
+            using (var command = new MySqlCommand(
+                @"SELECT COALESCE(MP.ParameterName, MM.MemberType, '') AS MemberType,
+       COALESCE(SK.MemberSize, MM.MemberDimension, '') AS MemberSize
+FROM membermaster MM
+LEFT JOIN skewmaster SK ON SK.SKEWCode = MM.SKEWCode
+LEFT JOIN miscparameter MP ON MP.ParameterCode = MM.MemberType
+LEFT JOIN membertagging MT ON MT.OrignalRFID = MM.RFID
+WHERE MM.RFID = @RFID
+   OR MM.MemberCode = @RFID
+   OR MT.TagRFID = @RFID
+   OR MT.OrignalRFID = @RFID
+LIMIT 1",
+                connection))
+            {
+                command.CommandType = CommandType.Text;
+                command.Parameters.AddWithValue("@RFID", (lookupRfid ?? string.Empty).Trim());
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    if (!reader.Read())
+                    {
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(result.MemberType))
+                    {
+                        result.MemberType = ReadString(reader, "MemberType");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(result.MemberSize))
+                    {
+                        result.MemberSize = ReadString(reader, "MemberSize");
+                    }
+                }
             }
         }
 
@@ -6150,11 +6654,8 @@ LIMIT 1", connection))
         }
         public DataSet GetDispatchDetails(string dispatchCode)
         {
-            DataSet dataSet = ExecuteStoredProcedureDataSet("WebApp_Challan_InternalTransferDetails",
+            return ExecuteStoredProcedureDataSet("WebApp_Challan_InternalTransferDetails",
                 new Dictionary<string, object> { { "P_DispatchCode", dispatchCode } });
-
-            ReplaceDispatchChallanMemberSummary(dataSet, dispatchCode);
-            return dataSet;
         }
 
         public DataSet GetDispatchMemberDetails(string dispatchCode)
@@ -6208,6 +6709,7 @@ LIMIT 1", connection))
                 {
                     connection.Open();
                     DataTable memberSummary = LoadDispatchChallanMemberSummary(connection, dispatchCode);
+                    DataTable totalSummary = LoadDispatchChallanTotalSummary(connection, dispatchCode);
 
                     while (dataSet.Tables.Count > 1)
                     {
@@ -6215,6 +6717,7 @@ LIMIT 1", connection))
                     }
 
                     dataSet.Tables.Add(memberSummary);
+                    dataSet.Tables.Add(totalSummary);
                 }
             }
             catch (MySqlException)
@@ -6233,9 +6736,28 @@ FROM memberdispatchdtl MDD
 INNER JOIN membermaster MM ON MM.MemberCode = MDD.MemberCode
 LEFT JOIN skewmaster SK ON SK.SKEWCode = MM.SKEWCode
 LEFT JOIN miscparameter MP ON MP.ParameterCode = MM.MemberType
-WHERE MDD.MatDispCode = @DispatchCode AND MDD.Active = 'True'
+WHERE MDD.MatDispCode = @DispatchCode
 GROUP BY MP.ParameterName, SK.MemberSize
 ORDER BY MP.ParameterName, SK.MemberSize",
+                connection))
+            using (var adapter = new MySqlDataAdapter(command))
+            {
+                command.CommandType = CommandType.Text;
+                command.CommandTimeout = 1600;
+                command.Parameters.AddWithValue("@DispatchCode", dispatchCode.Trim());
+
+                var table = new DataTable();
+                adapter.Fill(table);
+                return table;
+            }
+        }
+
+        private static DataTable LoadDispatchChallanTotalSummary(MySqlConnection connection, string dispatchCode)
+        {
+            using (var command = new MySqlCommand(
+                @"SELECT COUNT(*) AS TotalQty
+FROM memberdispatchdtl
+WHERE MatDispCode = @DispatchCode",
                 connection))
             using (var adapter = new MySqlDataAdapter(command))
             {
@@ -6289,18 +6811,26 @@ ORDER BY MP.ParameterName, SK.MemberSize",
             return ExecuteMemberCollectionTextTable(
                 connection,
                 @"SELECT S.ClientBatchNo,
-       GROUP_CONCAT(S.MemberSize ORDER BY S.MemberSize SEPARATOR 'X') AS PalletMemberSize,
-       GROUP_CONCAT(S.size_count ORDER BY S.MemberSize SEPARATOR 'X') AS PalletMemberQty,
+       GROUP_CONCAT(S.MemberSize ORDER BY S.SizeDisplayOrder, S.MemberSize SEPARATOR 'X') AS PalletMemberSize,
+       GROUP_CONCAT(S.size_count ORDER BY S.SizeDisplayOrder, S.MemberSize SEPARATOR 'X') AS PalletMemberQty,
        MC.FromLocation AS DispatchShipToCode,
        COALESCE(ST.ShipToLocTitle, CM.CustName, '') AS DispatchedShipToName
 FROM (
-    SELECT MCD.CollectionCode, PDD.ClientBatchNo, SK.MemberSize, COUNT(*) AS size_count
+    SELECT MCD.CollectionCode, PDD.ClientBatchNo, SK.MemberSize, COUNT(*) AS size_count,
+           CASE
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'CROSS%' THEN 1
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'CM%' THEN 1
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'LONG%' THEN 2
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'LM%' THEN 2
+               ELSE 9
+           END AS SizeDisplayOrder
     FROM membercollectiondtl MCD
     INNER JOIN palletdismentlecustomerdt PDD ON PDD.CustDismentleCode = MCD.CustDismentleCode AND PDD.MemberCode = MCD.MemberCode
     INNER JOIN membermaster MM ON MM.MemberCode = MCD.MemberCode
     INNER JOIN skewmaster SK ON SK.SKEWCode = MM.SKEWCode
+    LEFT JOIN miscparameter MP ON MP.ParameterCode = MM.MemberType
     WHERE MCD.CollectionCode = @CollectionCode AND PDD.ActionType = 'Y'
-    GROUP BY MCD.CollectionCode, PDD.ClientBatchNo, SK.MemberSize
+    GROUP BY MCD.CollectionCode, PDD.ClientBatchNo, SK.MemberSize, SizeDisplayOrder
 ) S
 INNER JOIN membercollection MC ON MC.CollectionCode = S.CollectionCode
 LEFT JOIN shiptolocation ST ON ST.ShipToLocCode = MC.FromLocation
@@ -6331,18 +6861,26 @@ ORDER BY MP.ParameterName, SK.MemberSize",
             return ExecuteMemberCollectionTextTable(
                 connection,
                 @"SELECT S.ClientBatchNo,
-       GROUP_CONCAT(S.MemberSize ORDER BY S.MemberSize SEPARATOR 'X') AS PalletMemberSize,
-       GROUP_CONCAT(S.size_count ORDER BY S.MemberSize SEPARATOR 'X') AS PalletMemberQty,
+       GROUP_CONCAT(S.MemberSize ORDER BY S.SizeDisplayOrder, S.MemberSize SEPARATOR 'X') AS PalletMemberSize,
+       GROUP_CONCAT(S.size_count ORDER BY S.SizeDisplayOrder, S.MemberSize SEPARATOR 'X') AS PalletMemberQty,
        COALESCE(ST.ShipToLocTitle, CM.CustName, '') AS DispatchedShipToName,
        S.ActionType
 FROM (
-    SELECT MCD.CollectionCode, PDD.ClientBatchNo, PDD.ActionType, SK.MemberSize, COUNT(*) AS size_count
+    SELECT MCD.CollectionCode, PDD.ClientBatchNo, PDD.ActionType, SK.MemberSize, COUNT(*) AS size_count,
+           CASE
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'CROSS%' THEN 1
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'CM%' THEN 1
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'LONG%' THEN 2
+               WHEN UPPER(COALESCE(MP.ParameterName, '')) LIKE 'LM%' THEN 2
+               ELSE 9
+           END AS SizeDisplayOrder
     FROM membercollectiondtl MCD
     INNER JOIN palletdismentlecustomerdt PDD ON PDD.CustDismentleCode = MCD.CustDismentleCode AND PDD.MemberCode = MCD.MemberCode
     INNER JOIN membermaster MM ON MM.MemberCode = MCD.MemberCode
     INNER JOIN skewmaster SK ON SK.SKEWCode = MM.SKEWCode
+    LEFT JOIN miscparameter MP ON MP.ParameterCode = MM.MemberType
     WHERE MCD.CollectionCode = @CollectionCode AND PDD.ActionType <> 'Y'
-    GROUP BY MCD.CollectionCode, PDD.ClientBatchNo, PDD.ActionType, SK.MemberSize
+    GROUP BY MCD.CollectionCode, PDD.ClientBatchNo, PDD.ActionType, SK.MemberSize, SizeDisplayOrder
 ) S
 INNER JOIN membercollection MC ON MC.CollectionCode = S.CollectionCode
 LEFT JOIN shiptolocation ST ON ST.ShipToLocCode = MC.FromLocation
